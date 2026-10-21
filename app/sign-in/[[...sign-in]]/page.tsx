@@ -1,12 +1,13 @@
 "use client";
 
-import { SignIn } from "@clerk/nextjs";
 import {
   Building2Icon,
   ChartNoAxesCombinedIcon,
   ShieldCheckIcon,
   SparklesIcon,
 } from "lucide-react";
+
+import { CustomSignInForm } from "@/components/auth/custom-sign-in-form";
 
 export default function SignInPage() {
   return (
@@ -60,23 +61,7 @@ export default function SignInPage() {
             <p className="text-xs text-muted-foreground">Espace de gestion</p>
           </div>
         </div>
-        <SignIn
-          path="/sign-in"
-          routing="path"
-          forceRedirectUrl="/"
-          withSignUp={false}
-          appearance={{
-            elements: {
-              rootBox: "w-full max-w-md",
-              cardBox: "w-full shadow-none",
-              card: "w-full rounded-3xl border border-border bg-card shadow-[0_30px_80px_rgba(15,23,42,0.10)]",
-              headerTitle: "text-2xl font-bold",
-              headerSubtitle: "text-muted-foreground",
-              formButtonPrimary: "bg-primary hover:bg-primary/90",
-              footerAction: "hidden",
-            },
-          }}
-        />
+        <CustomSignInForm />
       </section>
     </div>
   );
