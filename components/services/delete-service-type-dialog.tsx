@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Trash2Icon } from "lucide-react"
 
 export function DeleteServiceTypeDialog({
@@ -25,7 +25,7 @@ export function DeleteServiceTypeDialog({
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = getSupabaseBrowserClient()
+  const supabase = useSupabaseBrowserClient()
 
   const handleDelete = async () => {
     setLoading(true)
@@ -33,7 +33,6 @@ export function DeleteServiceTypeDialog({
     const { error } = await supabase.from("service_types").delete().eq("id", serviceTypeId)
 
     if (error) {
-      console.error("[v0] Error deleting service type:", error)
       alert("Erreur lors de la suppression du type de service")
     } else {
       setOpen(false)

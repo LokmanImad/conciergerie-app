@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 import { PencilIcon } from "lucide-react"
 
 type Apartment = {
@@ -34,7 +34,7 @@ export function EditApartmentDialog({ apartment }: { apartment: Apartment }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = getSupabaseBrowserClient()
+  const supabase = useSupabaseBrowserClient()
 
   const [formData, setFormData] = useState({
     name: apartment.name,
@@ -62,7 +62,6 @@ export function EditApartmentDialog({ apartment }: { apartment: Apartment }) {
       .eq("id", apartment.id)
 
     if (error) {
-      console.error("[v0] Error updating apartment:", error)
       alert("Erreur lors de la modification de l'appartement")
     } else {
       setOpen(false)

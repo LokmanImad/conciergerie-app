@@ -16,14 +16,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { PlusIcon } from "lucide-react"
-import { createBrowserClient } from "@/lib/supabase/client"
+import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
 export function AddProfitPaymentDialog() {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createBrowserClient()
+  const supabase = useSupabaseBrowserClient()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -47,7 +47,7 @@ export function AddProfitPaymentDialog() {
       setOpen(false)
       router.refresh()
     } catch (error) {
-      console.error("Error adding profit payment:", error)
+      alert("Erreur lors de l'ajout du paiement")
     } finally {
       setLoading(false)
     }
@@ -80,7 +80,7 @@ export function AddProfitPaymentDialog() {
             </div>
           </div>
           <div>
-            <Label htmlFor="total_profit">Bénéfice total (TND)</Label>
+            <Label htmlFor="total_profit">Bénéfice total (DH)</Label>
             <Input
               type="number"
               step="0.01"

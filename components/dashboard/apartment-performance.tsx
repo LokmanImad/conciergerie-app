@@ -33,19 +33,26 @@ export function ApartmentPerformance({ apartments }: { apartments: Apartment[] }
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Vos appartements</CardTitle>
-        <CardDescription>Liste de tous vos appartements gérés</CardDescription>
+    <Card className="h-full overflow-hidden bg-card/80 flex flex-col">
+      <CardHeader className="border-b border-border/60 bg-muted/25">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <BuildingIcon className="size-5" />
+          </div>
+          <div>
+            <CardTitle>Vos appartements</CardTitle>
+            <CardDescription className="mt-1">Portefeuille actuellement géré</CardDescription>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 flex-1 flex flex-col">
         {apartments.map((apartment) => (
           <div
             key={apartment.id}
-            className="flex items-start justify-between p-4 rounded-lg border hover:border-primary/50 transition-colors"
+            className="group flex items-start justify-between rounded-2xl border border-border/60 bg-background/45 p-4 transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:bg-primary/[0.025] hover:shadow-sm"
           >
             <div className="flex items-start gap-3 flex-1 min-w-0">
-              <div className="p-2 rounded-md bg-primary/10 shrink-0">
+              <div className="p-2.5 rounded-xl bg-primary/8 shrink-0 transition-transform group-hover:scale-105">
                 <BuildingIcon className="size-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
@@ -65,11 +72,13 @@ export function ApartmentPerformance({ apartments }: { apartments: Apartment[] }
             </div>
           </div>
         ))}
-        <Link href="/appartements" className="block">
-          <Button variant="outline" className="w-full bg-transparent">
-            Voir tous les appartements
-          </Button>
-        </Link>
+        <div className="mt-auto pt-4">
+          <Link href="/appartements" className="block">
+            <Button variant="outline" className="w-full">
+              Voir tous les appartements
+            </Button>
+          </Link>
+        </div>
       </CardContent>
     </Card>
   )

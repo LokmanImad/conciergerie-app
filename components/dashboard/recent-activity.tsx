@@ -56,18 +56,25 @@ export function RecentActivity({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Activité récente</CardTitle>
-        <CardDescription>Dernières réservations et charges enregistrées</CardDescription>
+    <Card className="h-full overflow-hidden bg-card/80 flex flex-col">
+      <CardHeader className="border-b border-border/60 bg-muted/25">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-700">
+            <CalendarIcon className="size-5" />
+          </div>
+          <div>
+            <CardTitle>Activité récente</CardTitle>
+            <CardDescription className="mt-1">Dernières opérations enregistrées</CardDescription>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {activities.slice(0, 8).map((activity, index) => {
+      <CardContent className="space-y-4 flex-1 flex flex-col">
+        {activities.slice(0, 3).map((activity, index) => {
           if (activity.type === "reservation") {
             const res = activity.data as Reservation
             return (
-              <div key={`res-${res.id}`} className="flex items-start gap-3 pb-4 border-b last:border-0">
-                <div className="p-2 rounded-md bg-primary/10 shrink-0">
+              <div key={`res-${res.id}`} className="flex items-start gap-3 rounded-xl border border-transparent p-3 transition-colors hover:border-border/60 hover:bg-muted/35">
+                <div className="p-2.5 rounded-xl bg-primary/10 shrink-0">
                   <UserIcon className="size-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -76,7 +83,7 @@ export function RecentActivity({
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant="outline" className="text-xs">
                       <CoinsIcon className="size-3 mr-1" />
-                      {Number(res.total_amount).toFixed(2)} TND
+                      {Number(res.total_amount).toFixed(2)} DH
                     </Badge>
                     <span className="text-xs text-muted-foreground">
                       {format(new Date(res.check_in), "d MMM", { locale: fr })}
@@ -88,8 +95,8 @@ export function RecentActivity({
           } else {
             const charge = activity.data as Charge
             return (
-              <div key={`charge-${charge.id}`} className="flex items-start gap-3 pb-4 border-b last:border-0">
-                <div className="p-2 rounded-md bg-destructive/10 shrink-0">
+              <div key={`charge-${charge.id}`} className="flex items-start gap-3 rounded-xl border border-transparent p-3 transition-colors hover:border-border/60 hover:bg-muted/35">
+                <div className="p-2.5 rounded-xl bg-destructive/10 shrink-0">
                   <ReceiptIcon className="size-4 text-destructive" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -100,7 +107,7 @@ export function RecentActivity({
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant="outline" className="text-xs">
                       <CoinsIcon className="size-3 mr-1" />
-                      {Number(charge.amount).toFixed(2)} TND
+                      {Number(charge.amount).toFixed(2)} DH
                     </Badge>
                     <Badge variant="secondary" className="text-xs">
                       {charge.paid_by_person === "imad"
@@ -115,17 +122,19 @@ export function RecentActivity({
             )
           }
         })}
-        <div className="grid grid-cols-2 gap-2 pt-2">
-          <Link href="/reservations">
-            <Button variant="outline" size="sm" className="w-full bg-transparent">
-              Réservations
-            </Button>
-          </Link>
-          <Link href="/charges">
-            <Button variant="outline" size="sm" className="w-full bg-transparent">
-              Charges
-            </Button>
-          </Link>
+        <div className="mt-auto pt-2">
+          <div className="grid grid-cols-2 gap-2">
+            <Link href="/reservations">
+              <Button variant="outline" size="sm" className="w-full">
+                Réservations
+              </Button>
+            </Link>
+            <Link href="/charges">
+              <Button variant="outline" size="sm" className="w-full">
+                Charges
+              </Button>
+            </Link>
+          </div>
         </div>
       </CardContent>
     </Card>

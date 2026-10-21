@@ -12,14 +12,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Trash2Icon } from "lucide-react"
 
 export function DeleteApartmentDialog({ apartmentId, apartmentName }: { apartmentId: string; apartmentName: string }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = getSupabaseBrowserClient()
+  const supabase = useSupabaseBrowserClient()
 
   const handleDelete = async () => {
     setLoading(true)
@@ -27,7 +27,6 @@ export function DeleteApartmentDialog({ apartmentId, apartmentName }: { apartmen
     const { error } = await supabase.from("apartments").delete().eq("id", apartmentId)
 
     if (error) {
-      console.error("[v0] Error deleting apartment:", error)
       alert("Erreur lors de la suppression de l'appartement")
     } else {
       setOpen(false)

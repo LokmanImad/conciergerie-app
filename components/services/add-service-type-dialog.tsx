@@ -18,14 +18,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 import { PlusIcon } from "lucide-react"
 
 export function AddServiceTypeDialog() {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = getSupabaseBrowserClient()
+  const supabase = useSupabaseBrowserClient()
 
   const [formData, setFormData] = useState({
     name: "",
@@ -46,7 +46,6 @@ export function AddServiceTypeDialog() {
     ])
 
     if (error) {
-      console.error("[v0] Error adding service type:", error)
       alert("Erreur lors de l'ajout du type de service")
     } else {
       setOpen(false)

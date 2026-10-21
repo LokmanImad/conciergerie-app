@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 import { PencilIcon } from "lucide-react"
 
 type ServiceType = {
@@ -32,7 +32,7 @@ export function EditServiceTypeDialog({ serviceType }: { serviceType: ServiceTyp
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = getSupabaseBrowserClient()
+  const supabase = useSupabaseBrowserClient()
 
   const [formData, setFormData] = useState({
     name: serviceType.name,
@@ -54,7 +54,6 @@ export function EditServiceTypeDialog({ serviceType }: { serviceType: ServiceTyp
       .eq("id", serviceType.id)
 
     if (error) {
-      console.error("[v0] Error updating service type:", error)
       alert("Erreur lors de la modification du type de service")
     } else {
       setOpen(false)

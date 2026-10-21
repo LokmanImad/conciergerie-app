@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SettingsIcon } from "lucide-react"
-import { createBrowserClient } from "@/lib/supabase/client"
+import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
 type Settings = {
@@ -18,7 +18,7 @@ export function PaymentSettings({ settings }: { settings: Settings | null }) {
   const [months, setMonths] = useState(settings?.payment_frequency_months || 3)
   const [saving, setSaving] = useState(false)
   const router = useRouter()
-  const supabase = createBrowserClient()
+  const supabase = useSupabaseBrowserClient()
 
   const handleSave = async () => {
     setSaving(true)
@@ -30,7 +30,7 @@ export function PaymentSettings({ settings }: { settings: Settings | null }) {
       }
       router.refresh()
     } catch (error) {
-      console.error("Error saving settings:", error)
+      alert("Erreur lors de la sauvegarde des paramètres")
     } finally {
       setSaving(false)
     }

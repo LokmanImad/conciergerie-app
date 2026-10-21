@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { PencilIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -14,164 +15,90 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import { PencilIcon } from "lucide-react"
-
-type Reservation = {
-  id: string
-  apartment_id: string
-  client_name: string
-  check_in: string
-  check_out: string
-  total_amount: number
-  notes: string | null
-}
-
-type Apartment = { id: string; name: string; commission_rate: number }
+import { ReservationFormFields } from "@/components/reservations/reservation-form-fields"
+import {
+  reservationToForm,
+  type ApartmentOption,
+  type ReservationRecord,
+} from "@/features/reservations/types"
+import { getReservationDatabaseError, validateReservationForm } from "@/features/reservations/validation"
+import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 
 export function EditReservationDialog({
   reservation,
   apartments,
 }: {
-  reservation: Reservation
-  apartments: Apartment[]
+  reservation: ReservationRecord
+  apartments: ApartmentOption[]
 }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [form, setForm] = useState(() => reservationToForm(reservation))
   const router = useRouter()
-  const supabase = getSupabaseBrowserClient()
+  const supabase = useSupabaseBrowserClient()
 
-  const [formData, setFormData] = useState({
-    apartment_id: reservation.apartment_id,
-    client_name: reservation.client_name,
-    check_in: reservation.check_in,
-    check_out: reservation.check_out,
-    total_amount: reservation.total_amount.toString(),
-    notes: reservation.notes || "",
-  })
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setError(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    const { error } = await supabase
-      .from("reservations")
-      .update({
-        apartment_id: formData.apartment_id,
-        client_name: formData.client_name,
-        check_in: formData.check_in,
-        check_out: formData.check_out,
-        total_amount: Number.parseFloat(formData.total_amount),
-        notes: formData.notes || null,
-      })
-      .eq("id", reservation.id)
-
-    if (error) {
-      console.error("[v0] Error updating reservation:", error)
-      alert("Erreur lors de la modification de la réservation")
-    } else {
-      setOpen(false)
-      router.refresh()
+    const result = validateReservationForm(form)
+    if (!result.success) {
+      setError(result.error)
+      return
     }
 
+    setLoading(true)
+    const { error: updateError } = await supabase
+      .from("reservations")
+      .update(result.data)
+      .eq("id", reservation.id)
+
+    if (updateError) {
+      setError(getReservationDatabaseError(updateError))
+      setLoading(false)
+      return
+    }
+
+    setOpen(false)
+    router.refresh()
     setLoading(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen)
+        setError(null)
+        if (nextOpen) setForm(reservationToForm(reservation))
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="flex-1 bg-transparent">
           <PencilIcon className="size-4" />
           Modifier
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[780px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Modifier la réservation</DialogTitle>
-            <DialogDescription>Modifiez les informations de la réservation</DialogDescription>
+            <DialogTitle>Modifier {reservation.reference}</DialogTitle>
+            <DialogDescription>Mettez à jour le séjour, le client ou le paiement.</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-apartment_id">Appartement *</Label>
-              <Select
-                value={formData.apartment_id}
-                onValueChange={(value) => setFormData({ ...formData, apartment_id: value })}
-              >
-                <SelectTrigger id="edit-apartment_id" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {apartments.map((apt) => (
-                    <SelectItem key={apt.id} value={apt.id}>
-                      {apt.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-client_name">Nom du client *</Label>
-              <Input
-                id="edit-client_name"
-                value={formData.client_name}
-                onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-check_in">Date d'arrivée *</Label>
-                <Input
-                  id="edit-check_in"
-                  type="date"
-                  value={formData.check_in}
-                  onChange={(e) => setFormData({ ...formData, check_in: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-check_out">Date de départ *</Label>
-                <Input
-                  id="edit-check_out"
-                  type="date"
-                  value={formData.check_out}
-                  onChange={(e) => setFormData({ ...formData, check_out: e.target.value })}
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-total_amount">Montant total (TND) *</Label>
-              <Input
-                id="edit-total_amount"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.total_amount}
-                onChange={(e) => setFormData({ ...formData, total_amount: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-notes">Notes</Label>
-              <Textarea
-                id="edit-notes"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              />
-            </div>
-          </div>
+          <ReservationFormFields
+            apartments={apartments}
+            form={form}
+            idPrefix={`edit-${reservation.id}`}
+            error={error}
+            onChange={setForm}
+          />
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               Annuler
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Modification..." : "Modifier"}
+              {loading ? "Enregistrement…" : "Enregistrer"}
             </Button>
           </DialogFooter>
         </form>

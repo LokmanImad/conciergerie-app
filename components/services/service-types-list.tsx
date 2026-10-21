@@ -45,18 +45,18 @@ export function ServiceTypesList({ serviceTypes }: { serviceTypes: ServiceType[]
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
       {serviceTypes.map((serviceType) => {
         const payerInfo = getPayerInfo(serviceType.paid_by)
         const PayerIcon = payerInfo.icon
 
         return (
-          <Card key={serviceType.id} className="hover:border-primary/50 transition-colors">
-            <CardHeader>
+          <Card key={serviceType.id} className="group overflow-hidden bg-card/85 transition-all hover:-translate-y-1 hover:border-primary/20 hover:shadow-[0_20px_45px_rgba(15,23,42,0.08)]">
+            <CardHeader className="border-b border-border/60 bg-muted/20">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <CardTitle className="flex items-center gap-2">
-                    <WrenchIcon className="size-5 text-primary" />
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><WrenchIcon className="size-5" /></span>
                     {serviceType.name}
                   </CardTitle>
                   {serviceType.description && (

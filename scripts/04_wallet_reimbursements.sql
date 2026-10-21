@@ -18,7 +18,8 @@ ALTER TABLE wallet_reimbursements ENABLE ROW LEVEL SECURITY;
 -- Politique pour permettre toutes les opérations
 CREATE POLICY "Allow all operations on wallet_reimbursements" ON wallet_reimbursements FOR ALL USING (true) WITH CHECK (true);
 
--- Fonction pour enregistrer un remboursement et diminuer le solde du portefeuille
+-- Fonction pour enregistrer un remboursement
+-- Le solde du portefeuille est maintenant calculé dynamiquement via get_wallet_balance()
 CREATE OR REPLACE FUNCTION record_wallet_reimbursement(
   person TEXT,
   payment_amount DECIMAL(10, 2),
@@ -29,10 +30,6 @@ BEGIN
   INSERT INTO wallet_reimbursements (person_name, amount, notes)
   VALUES (person, payment_amount, payment_notes);
   
-  -- Diminuer le solde du portefeuille
-  UPDATE wallets
-  SET balance = balance - payment_amount,
-      updated_at = NOW()
-  WHERE person_name = person;
+  -- Le solde est maintenant calculé dynamiquement, plus besoin de mettre à jour manuellement
 END;
 $$ LANGUAGE plpgsql;

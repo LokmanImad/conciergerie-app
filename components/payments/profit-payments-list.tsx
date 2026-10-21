@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { CalendarIcon, CheckCircleIcon, ClockIcon, CoinsIcon, UserIcon } from "lucide-react"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
-import { createBrowserClient } from "@/lib/supabase/client"
+import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
@@ -27,7 +27,7 @@ type ProfitPayment = {
 
 export function ProfitPaymentsList({ payments }: { payments: ProfitPayment[] }) {
   const router = useRouter()
-  const supabase = createBrowserClient()
+  const supabase = useSupabaseBrowserClient()
   const [processing, setProcessing] = useState<string | null>(null)
 
   const handleMarkAsPaid = async (paymentId: string, person: "imad" | "jassem") => {
@@ -40,7 +40,7 @@ export function ProfitPaymentsList({ payments }: { payments: ProfitPayment[] }) 
       await supabase.from("profit_payments").update(updates).eq("id", paymentId)
       router.refresh()
     } catch (error) {
-      console.error("Error marking as paid:", error)
+      // Erreur silencieuse
     } finally {
       setProcessing(null)
     }
@@ -81,7 +81,7 @@ export function ProfitPaymentsList({ payments }: { payments: ProfitPayment[] }) 
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground">Bénéfice total</p>
-                  <p className="text-2xl font-bold text-primary">{Number(payment.total_profit).toFixed(2)} TND</p>
+                  <p className="text-2xl font-bold text-primary">{Number(payment.total_profit).toFixed(2)} DH</p>
                 </div>
               </div>
             </CardHeader>
@@ -106,7 +106,7 @@ export function ProfitPaymentsList({ payments }: { payments: ProfitPayment[] }) 
                       </Badge>
                     )}
                   </div>
-                  <p className="text-2xl font-bold text-blue-600">{Number(payment.imad_share).toFixed(2)} TND</p>
+                  <p className="text-2xl font-bold text-blue-600">{Number(payment.imad_share).toFixed(2)} DH</p>
                   {payment.imad_paid && payment.imad_payment_date && (
                     <p className="text-xs text-muted-foreground mt-2">
                       Payé le {format(new Date(payment.imad_payment_date), "d MMM yyyy à HH:mm", { locale: fr })}
@@ -143,7 +143,7 @@ export function ProfitPaymentsList({ payments }: { payments: ProfitPayment[] }) 
                       </Badge>
                     )}
                   </div>
-                  <p className="text-2xl font-bold text-purple-600">{Number(payment.jassem_share).toFixed(2)} TND</p>
+                  <p className="text-2xl font-bold text-purple-600">{Number(payment.jassem_share).toFixed(2)} DH</p>
                   {payment.jassem_paid && payment.jassem_payment_date && (
                     <p className="text-xs text-muted-foreground mt-2">
                       Payé le {format(new Date(payment.jassem_payment_date), "d MMM yyyy à HH:mm", { locale: fr })}

@@ -2,9 +2,9 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { ClerkProvider } from "@clerk/nextjs"
 import "./globals.css"
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+import { AuthenticatedAppShell } from "@/components/authenticated-app-shell"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -38,14 +38,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="fr">
-      <body className="font-sans antialiased">
-        <SidebarProvider>
-          <AppSidebar />
-          <main className="w-full">{children}</main>
-        </SidebarProvider>
-        <Analytics />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="fr">
+        <body className="font-sans antialiased">
+          <AuthenticatedAppShell>{children}</AuthenticatedAppShell>
+          <Analytics />
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

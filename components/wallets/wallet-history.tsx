@@ -85,14 +85,14 @@ export function WalletHistory({ charges, reimbursements }: { charges: Charge[]; 
                   <CoinsIcon className="size-4 text-blue-600" />
                   <div>
                     <p className="text-xs text-muted-foreground">Total Imad</p>
-                    <p className="text-sm font-bold text-blue-600">{totalByImad.toFixed(2)} TND</p>
+                    <p className="text-sm font-bold text-blue-600">{totalByImad.toFixed(2)} DH</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 rounded-md bg-purple-500/10 border border-purple-500/20">
                   <CoinsIcon className="size-4 text-purple-600" />
                   <div>
                     <p className="text-xs text-muted-foreground">Total Jassem</p>
-                    <p className="text-sm font-bold text-purple-600">{totalByJassem.toFixed(2)} TND</p>
+                    <p className="text-sm font-bold text-purple-600">{totalByJassem.toFixed(2)} DH</p>
                   </div>
                 </div>
               </div>
@@ -126,7 +126,7 @@ export function WalletHistory({ charges, reimbursements }: { charges: Charge[]; 
                           )}
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-lg font-bold">{Number(charge.amount).toFixed(2)} TND</p>
+                          <p className="text-lg font-bold">{Number(charge.amount).toFixed(2)} DH</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 mt-2">
@@ -162,14 +162,14 @@ export function WalletHistory({ charges, reimbursements }: { charges: Charge[]; 
                   <CheckCircleIcon className="size-4 text-green-600" />
                   <div>
                     <p className="text-xs text-muted-foreground">Remboursé Imad</p>
-                    <p className="text-sm font-bold text-green-600">{reimbursedToImad.toFixed(2)} TND</p>
+                    <p className="text-sm font-bold text-green-600">{reimbursedToImad.toFixed(2)} DH</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 rounded-md bg-green-500/10 border border-green-500/20">
                   <CheckCircleIcon className="size-4 text-green-600" />
                   <div>
                     <p className="text-xs text-muted-foreground">Remboursé Jassem</p>
-                    <p className="text-sm font-bold text-green-600">{reimbursedToJassem.toFixed(2)} TND</p>
+                    <p className="text-sm font-bold text-green-600">{reimbursedToJassem.toFixed(2)} DH</p>
                   </div>
                 </div>
               </div>
@@ -203,7 +203,7 @@ export function WalletHistory({ charges, reimbursements }: { charges: Charge[]; 
                         </div>
                         <div className="text-right shrink-0">
                           <p className="text-lg font-bold text-green-600">
-                            {Number(reimbursement.amount).toFixed(2)} TND
+                            {Number(reimbursement.amount).toFixed(2)} DH
                           </p>
                         </div>
                       </div>

@@ -16,13 +16,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { WalletIcon, MinusIcon } from "lucide-react"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 
 type Wallet = {
   id: string
   person_name: string
   balance: number
-  updated_at: string
+  updated_at?: string
 }
 
 export function WalletCards({ wallets }: { wallets: Wallet[] }) {
@@ -32,7 +32,7 @@ export function WalletCards({ wallets }: { wallets: Wallet[] }) {
   const [notes, setNotes] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = getSupabaseBrowserClient()
+  const supabase = useSupabaseBrowserClient()
 
   const handlePayment = async () => {
     if (!selectedWallet || !amount) return
@@ -45,7 +45,6 @@ export function WalletCards({ wallets }: { wallets: Wallet[] }) {
     })
 
     if (error) {
-      console.error("[v0] Error recording reimbursement:", error)
       alert("Erreur lors du remboursement")
     } else {
       setOpen(false)
@@ -81,7 +80,7 @@ export function WalletCards({ wallets }: { wallets: Wallet[] }) {
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground">Solde actuel</p>
-              <p className="text-3xl font-bold text-blue-600">{(imadWallet?.balance || 0).toFixed(2)} TND</p>
+              <p className="text-3xl font-bold text-blue-600">{(imadWallet?.balance || 0).toFixed(2)} DH</p>
             </div>
             <Button
               variant="outline"
@@ -115,7 +114,7 @@ export function WalletCards({ wallets }: { wallets: Wallet[] }) {
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground">Solde actuel</p>
-              <p className="text-3xl font-bold text-purple-600">{(jassemWallet?.balance || 0).toFixed(2)} TND</p>
+              <p className="text-3xl font-bold text-purple-600">{(jassemWallet?.balance || 0).toFixed(2)} DH</p>
             </div>
             <Button
               variant="outline"
@@ -143,7 +142,7 @@ export function WalletCards({ wallets }: { wallets: Wallet[] }) {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="payment-amount">Montant à rembourser (TND) *</Label>
+              <Label htmlFor="payment-amount">Montant à rembourser (DH) *</Label>
               <Input
                 id="payment-amount"
                 type="number"

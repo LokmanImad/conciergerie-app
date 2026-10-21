@@ -17,14 +17,14 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 import { PlusIcon } from "lucide-react"
 
 export function AddApartmentDialog() {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = getSupabaseBrowserClient()
+  const supabase = useSupabaseBrowserClient()
 
   const [formData, setFormData] = useState({
     name: "",
@@ -51,7 +51,6 @@ export function AddApartmentDialog() {
     ])
 
     if (error) {
-      console.error("[v0] Error adding apartment:", error)
       alert("Erreur lors de l'ajout de l'appartement")
     } else {
       setOpen(false)

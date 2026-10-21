@@ -12,14 +12,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Trash2Icon } from "lucide-react"
 
 export function DeleteChargeDialog({ chargeId }: { chargeId: string }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = getSupabaseBrowserClient()
+  const supabase = useSupabaseBrowserClient()
 
   const handleDelete = async () => {
     setLoading(true)
@@ -27,7 +27,6 @@ export function DeleteChargeDialog({ chargeId }: { chargeId: string }) {
     const { error } = await supabase.from("charges").delete().eq("id", chargeId)
 
     if (error) {
-      console.error("[v0] Error deleting charge:", error)
       alert("Erreur lors de la suppression de la charge")
     } else {
       setOpen(false)
