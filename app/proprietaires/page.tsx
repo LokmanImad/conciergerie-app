@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { FileSignatureIcon, ReceiptTextIcon } from "lucide-react";
 import Link from "next/link";
+import { ModuleVisibility } from "@/components/module-visibility";
 
 function firstRelation<T>(value: T | T[] | null): T | null {
   return Array.isArray(value) ? (value[0] ?? null) : value;
@@ -57,11 +58,13 @@ export default async function ProprietairesPage() {
                 <ReceiptTextIcon className="size-4" /> Factures propriétaires
               </Link>
             </Button>
-            <Button asChild>
-              <Link href="/contrats">
-                <FileSignatureIcon className="size-4" /> Contrats
-              </Link>
-            </Button>
+            <ModuleVisibility moduleKey="contracts">
+              <Button asChild>
+                <Link href="/contrats">
+                  <FileSignatureIcon className="size-4" /> Contrats
+                </Link>
+              </Button>
+            </ModuleVisibility>
           </>
         }
       />

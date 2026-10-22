@@ -25,6 +25,7 @@ import { format, differenceInDays } from "date-fns"
 import { fr } from "date-fns/locale"
 import { useSupabaseBrowserClient } from "@/lib/supabase/client"
 import { TravelerLinkDialog } from "@/components/travelers/traveler-link-dialog"
+import { useModuleEntitlements } from "@/components/module-entitlements-context"
 import type { RegistrationStatus } from "@/features/travelers/types"
 import {
   BOOKING_STATUSES,
@@ -73,6 +74,7 @@ export function ReservationsList({
   invoices?: ReservationInvoice[]
 }) {
   const router = useRouter()
+  const entitlements = useModuleEntitlements()
   const supabase = useSupabaseBrowserClient()
   const [search, setSearch] = useState("")
   const [filterApartment, setFilterApartment] = useState<string>("all")
@@ -519,13 +521,15 @@ export function ReservationsList({
                 <div className="flex flex-wrap gap-2 pt-3 border-t">
                   <EditReservationDialog reservation={reservation} apartments={apartments} />
                   <DeleteReservationDialog reservationId={reservation.id} clientName={reservation.client_name} />
-                  <TravelerLinkDialog
-                    reservationId={reservation.id}
-                    reservationReference={reservation.reference}
-                    principalGuest={reservation.client_name}
-                    registrationStatus={travelerRegistration?.status}
-                  />
-                  {invoice ? (
+                  {entitlements.canUse("police_forms") && (
+                    <TravelerLinkDialog
+                      reservationId={reservation.id}
+                      reservationReference={reservation.reference}
+                      principalGuest={reservation.client_name}
+                      registrationStatus={travelerRegistration?.status}
+                    />
+                  )}
+                  {entitlements.canUse("invoices") && (invoice ? (
                     <Button
                       asChild
                       variant="outline"
@@ -548,7 +552,7 @@ export function ReservationsList({
                       <FileTextIcon className="size-4 mr-1" />
                       {loadingReservationId === reservation.id ? "Création..." : "Facturer"}
                     </Button>
-                  )}
+                  ))}
                 </div>
               </CardContent>
             </Card>

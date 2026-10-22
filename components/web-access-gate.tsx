@@ -7,10 +7,13 @@ import { Building2Icon, Loader2Icon, ShieldXIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AccountAccessScreen } from "@/components/account-access-screen";
 import { DeviceAccessBlocked } from "@/components/device-access-blocked";
+import { ModuleAccessDenied } from "@/components/module-access-denied";
+import { ModuleEntitlementsProvider } from "@/components/module-entitlements-context";
 import { useAccountAccess } from "@/hooks/use-account-access";
 import { useDeviceAccess } from "@/hooks/use-device-access";
 import { useEntitlements } from "@/hooks/use-entitlements";
-import { tenantSlugFromPathname, withTenantSlug } from "@/lib/tenant-routing";
+import { firstAvailableModulePath, requiredModuleForPathname } from "@/lib/module-access";
+import { stripTenantSlug, tenantSlugFromPathname, withTenantSlug } from "@/lib/tenant-routing";
 import { UserActivityTracker } from "@/components/user-activity-tracker";
 
 const PUBLIC_PATHS = ["/sign-in", "/sign-up", "/check-in"];
@@ -19,6 +22,8 @@ export function WebAccessGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const tenantSlug = tenantSlugFromPathname(pathname);
+  const internalPathname = stripTenantSlug(pathname, tenantSlug);
+  const requiredModule = requiredModuleForPathname(internalPathname);
   const accountAccess = useAccountAccess(true);
   const entitlements = useEntitlements(accountAccess.allowed);
   const deviceAccess = useDeviceAccess(
@@ -126,6 +131,15 @@ export function WebAccessGate({ children }: { children: React.ReactNode }) {
     );
   }
 
+  if (requiredModule && !entitlements.canUse(requiredModule)) {
+    return (
+      <ModuleAccessDenied
+        moduleKey={requiredModule}
+        dashboardHref={withTenantSlug(firstAvailableModulePath(entitlements.enabledModules), tenantSlug)}
+      />
+    );
+  }
+
   if (deviceAccess.loading) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center">
@@ -145,5 +159,10 @@ export function WebAccessGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <><UserActivityTracker />{children}</>;
+  return (
+    <ModuleEntitlementsProvider value={entitlements}>
+      <UserActivityTracker />
+      {children}
+    </ModuleEntitlementsProvider>
+  );
 }

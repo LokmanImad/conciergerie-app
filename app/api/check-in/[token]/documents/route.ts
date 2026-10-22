@@ -22,7 +22,7 @@ export async function POST(
   }
 
   const publicClient = getPublicSupabaseClient()
-  const { data: scope, error: scopeError } = await publicClient.rpc("get_public_registration_upload_scope", {
+  const { data: scope, error: scopeError } = await publicClient.rpc("get_public_registration_upload_scope_secure", {
     p_token_hash: hashToken(token),
   })
 

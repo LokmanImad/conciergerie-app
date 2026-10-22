@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 
 import { Card, CardContent } from "@/components/ui/card"
+import { ModuleVisibility } from "@/components/module-visibility"
 
 type Wallet = {
   id: string
@@ -55,22 +56,38 @@ export function DashboardStats({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Revenu total" value={`${amountFormatter.format(totalRevenue)} DH`} icon={CoinsIcon} tone="teal" />
-        <MetricCard label="Commission société" value={`${amountFormatter.format(totalCommission)} DH`} icon={TrendingUpIcon} tone="gold" />
-        <MetricCard label="Charges société" value={`${amountFormatter.format(companyCharges)} DH`} icon={TrendingDownIcon} tone="rose" />
-        <MetricCard
-          label="Bénéfice net"
-          value={`${amountFormatter.format(netProfit)} DH`}
-          icon={CircleDollarSignIcon}
-          tone={netProfit >= 0 ? "emerald" : "rose"}
-        />
+        <ModuleVisibility moduleKey="reservations">
+          <MetricCard label="Revenu total" value={`${amountFormatter.format(totalRevenue)} DH`} icon={CoinsIcon} tone="teal" />
+        </ModuleVisibility>
+        <ModuleVisibility moduleKey="reservations">
+          <MetricCard label="Commission société" value={`${amountFormatter.format(totalCommission)} DH`} icon={TrendingUpIcon} tone="gold" />
+        </ModuleVisibility>
+        <ModuleVisibility moduleKey="charges">
+          <MetricCard label="Charges société" value={`${amountFormatter.format(companyCharges)} DH`} icon={TrendingDownIcon} tone="rose" />
+        </ModuleVisibility>
+        <ModuleVisibility moduleKey="accounting">
+          <MetricCard
+            label="Bénéfice net"
+            value={`${amountFormatter.format(netProfit)} DH`}
+            icon={CircleDollarSignIcon}
+            tone={netProfit >= 0 ? "emerald" : "rose"}
+          />
+        </ModuleVisibility>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <CompactMetric label="Appartements gérés" value={String(apartmentsCount)} icon={Building2Icon} />
-        <CompactMetric label="Charges propriétaires" value={`${amountFormatter.format(ownerCharges)} DH`} icon={LandmarkIcon} />
-        <CompactMetric label="Portefeuille Imad" value={`${amountFormatter.format(imadWallet?.balance || 0)} DH`} icon={WalletCardsIcon} />
-        <CompactMetric label="Portefeuille Jassem" value={`${amountFormatter.format(jassemWallet?.balance || 0)} DH`} icon={WalletCardsIcon} />
+        <ModuleVisibility moduleKey="apartments">
+          <CompactMetric label="Appartements gérés" value={String(apartmentsCount)} icon={Building2Icon} />
+        </ModuleVisibility>
+        <ModuleVisibility moduleKey="charges">
+          <CompactMetric label="Charges propriétaires" value={`${amountFormatter.format(ownerCharges)} DH`} icon={LandmarkIcon} />
+        </ModuleVisibility>
+        <ModuleVisibility moduleKey="wallets">
+          <CompactMetric label="Portefeuille Imad" value={`${amountFormatter.format(imadWallet?.balance || 0)} DH`} icon={WalletCardsIcon} />
+        </ModuleVisibility>
+        <ModuleVisibility moduleKey="wallets">
+          <CompactMetric label="Portefeuille Jassem" value={`${amountFormatter.format(jassemWallet?.balance || 0)} DH`} icon={WalletCardsIcon} />
+        </ModuleVisibility>
       </div>
     </section>
   )

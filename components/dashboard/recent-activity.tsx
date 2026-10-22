@@ -7,6 +7,8 @@ import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ModuleVisibility } from "@/components/module-visibility"
+import { useModuleEntitlements } from "@/components/module-entitlements-context"
 
 type Reservation = {
   id: string
@@ -34,10 +36,15 @@ export function RecentActivity({
   reservations: Reservation[]
   charges: Charge[]
 }) {
+  const entitlements = useModuleEntitlements()
   // Combiner et trier les activités par date de création
   const activities = [
-    ...reservations.map((r) => ({ type: "reservation" as const, data: r, created_at: r.created_at })),
-    ...charges.map((c) => ({ type: "charge" as const, data: c, created_at: c.created_at })),
+    ...(entitlements.canUse("reservations")
+      ? reservations.map((r) => ({ type: "reservation" as const, data: r, created_at: r.created_at }))
+      : []),
+    ...(entitlements.canUse("charges")
+      ? charges.map((c) => ({ type: "charge" as const, data: c, created_at: c.created_at }))
+      : []),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   if (activities.length === 0) {
@@ -124,16 +131,16 @@ export function RecentActivity({
         })}
         <div className="mt-auto pt-2">
           <div className="grid grid-cols-2 gap-2">
-            <Link href="/reservations">
-              <Button variant="outline" size="sm" className="w-full">
-                Réservations
+            <ModuleVisibility moduleKey="reservations">
+              <Button variant="outline" size="sm" className="w-full" asChild>
+                <Link href="/reservations">Réservations</Link>
               </Button>
-            </Link>
-            <Link href="/charges">
-              <Button variant="outline" size="sm" className="w-full">
-                Charges
+            </ModuleVisibility>
+            <ModuleVisibility moduleKey="charges">
+              <Button variant="outline" size="sm" className="w-full" asChild>
+                <Link href="/charges">Charges</Link>
               </Button>
-            </Link>
+            </ModuleVisibility>
           </div>
         </div>
       </CardContent>

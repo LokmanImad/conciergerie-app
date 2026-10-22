@@ -25,7 +25,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { useCompanyBranding } from "@/components/company-branding-provider";
-import { useEntitlements } from "@/hooks/use-entitlements";
+import { useModuleEntitlements } from "@/components/module-entitlements-context";
 import { withTenantSlug } from "@/lib/tenant-routing";
 import {
   Sidebar,
@@ -82,7 +82,7 @@ export function AppSidebar({ tenantSlug }: { tenantSlug: string | null }) {
   const { isSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const router = useRouter();
-  const entitlements = useEntitlements();
+  const entitlements = useModuleEntitlements();
   const { branding } = useCompanyBranding();
 
   const handleSignOut = async () => {

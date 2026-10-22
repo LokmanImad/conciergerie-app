@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { ArrowRightIcon, CalendarPlusIcon, UsersRoundIcon } from "lucide-react"
 import Link from "next/link"
+import { ModuleVisibility } from "@/components/module-visibility"
 
 export default async function DashboardPage() {
   const supabase = await getSupabaseServerClient()
@@ -120,12 +121,16 @@ export default async function DashboardPage() {
         description="Suivez les revenus, les dépenses et les opérations importantes depuis un seul espace."
         actions={
           <>
-            <Button variant="outline" asChild>
-              <Link href="/voyageurs"><UsersRoundIcon className="size-4" /> Voyageurs</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/reservations"><CalendarPlusIcon className="size-4" /> Réservations <ArrowRightIcon className="size-4" /></Link>
-            </Button>
+            <ModuleVisibility moduleKey="travelers">
+              <Button variant="outline" asChild>
+                <Link href="/voyageurs"><UsersRoundIcon className="size-4" /> Voyageurs</Link>
+              </Button>
+            </ModuleVisibility>
+            <ModuleVisibility moduleKey="reservations">
+              <Button asChild>
+                <Link href="/reservations"><CalendarPlusIcon className="size-4" /> Réservations <ArrowRightIcon className="size-4" /></Link>
+              </Button>
+            </ModuleVisibility>
           </>
         }
       />
@@ -140,9 +145,13 @@ export default async function DashboardPage() {
         wallets={wallets || []}
       />
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <ApartmentPerformance apartments={apartments || []} />
-        <RecentActivity reservations={reservations || []} charges={charges || []} />
+      <div className="grid gap-6 [&>*:only-child]:xl:col-span-2 xl:grid-cols-2">
+        <ModuleVisibility moduleKey="apartments">
+          <ApartmentPerformance apartments={apartments || []} />
+        </ModuleVisibility>
+        <ModuleVisibility anyOf={["reservations", "charges"]}>
+          <RecentActivity reservations={reservations || []} charges={charges || []} />
+        </ModuleVisibility>
       </div>
     </div>
   )

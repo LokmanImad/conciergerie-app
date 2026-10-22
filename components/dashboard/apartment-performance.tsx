@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BuildingIcon, TrendingUpIcon } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ModuleVisibility } from "@/components/module-visibility"
 
 type Apartment = {
   id: string
@@ -24,9 +25,9 @@ export function ApartmentPerformance({ apartments }: { apartments: Apartment[] }
         <CardContent className="flex flex-col items-center justify-center py-8">
           <BuildingIcon className="size-12 text-muted-foreground mb-4" />
           <p className="text-muted-foreground text-sm mb-4">Commencez par ajouter vos appartements</p>
-          <Link href="/appartements">
-            <Button>Ajouter un appartement</Button>
-          </Link>
+          <ModuleVisibility moduleKey="apartments">
+            <Button asChild><Link href="/appartements">Ajouter un appartement</Link></Button>
+          </ModuleVisibility>
         </CardContent>
       </Card>
     )
@@ -73,11 +74,11 @@ export function ApartmentPerformance({ apartments }: { apartments: Apartment[] }
           </div>
         ))}
         <div className="mt-auto pt-4">
-          <Link href="/appartements" className="block">
-            <Button variant="outline" className="w-full">
-              Voir tous les appartements
+          <ModuleVisibility moduleKey="apartments">
+            <Button variant="outline" className="w-full" asChild>
+              <Link href="/appartements">Voir tous les appartements</Link>
             </Button>
-          </Link>
+          </ModuleVisibility>
         </div>
       </CardContent>
     </Card>

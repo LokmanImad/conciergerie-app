@@ -1,0 +1,54 @@
+{
+  "name": "Asad Hospitality",
+  "url": "https://www.asadhospitality.ma",
+  "appUrl": "https://app.asadhospitality.ma",
+  "email": "info@asadhospitality.ma",
+  "phone": "+212622625187",
+  "whatsapp": "+212669834697",
+  "branding": {
+    "logoLight": "/assets/asad-logo-light.jpg",
+    "logoDark": "/assets/asad-logo-dark.png",
+    "signature": "Where hospitality roars"
+  },
+  "hero": {
+    "eyebrow": "CONCIERGERIE & IMMOBILIER · MAROC",
+    "title": "Chaque lieu.",
+    "emphasis": "Une signature.",
+    "description": "De la gestion de votre appartement à votre prochain investissement, découvrez une approche personnelle de l’hospitalité et de l’immobilier au Maroc."
+  },
+  "destinations": [
+    {
+      "slug": "tanger",
+      "name": "Tanger",
+      "tagline": "Entre deux mers, mille possibles.",
+      "description": "Confiez votre appartement à une équipe qui accompagne votre projet à Tanger, de la gestion des séjours à la recherche de votre prochain bien.",
+      "available": true,
+      "image": "tanger.webp"
+    },
+    {
+      "slug": "tetouan",
+      "name": "Tétouan",
+      "tagline": "L’élégance méditerranéenne.",
+      "description": "Gestion locative, sous-location et accompagnement immobilier à Tétouan : parlons de votre appartement et de vos attentes.",
+      "available": true,
+      "image": "tetouan.webp"
+    },
+    {
+      "slug": "asilah",
+      "name": "Asilah",
+      "tagline": "L’Atlantique, tout simplement.",
+      "description": "Votre projet à Asilah mérite une attention personnelle. Découvrez notre approche pour gérer votre bien ou vous accompagner dans un achat.",
+      "available": true,
+      "image": "asilah.webp"
+    },
+    {
+      "slug": "marrakech",
+      "name": "Marrakech",
+      "tagline": "Notre prochain chapitre.",
+      "description": "Nous préparons notre arrivée à Marrakech. Faites-nous part de votre projet pour être informé de l’ouverture de nos services.",
+      "available": false,
+      "image": "courtyard.webp"
+    }
+  ],
+  "projects": []
+}

@@ -25,7 +25,7 @@ export async function GET(
   if (!TOKEN_PATTERN.test(token)) return invalidLinkResponse()
 
   const supabase = getPublicSupabaseClient()
-  const { data, error } = await supabase.rpc("get_public_traveler_registration", {
+  const { data, error } = await supabase.rpc("get_public_traveler_registration_secure", {
     p_token_hash: hashToken(token),
   })
 
@@ -57,7 +57,7 @@ export async function POST(
   }
 
   const supabase = getPublicSupabaseClient()
-  const { data, error } = await supabase.rpc("submit_public_traveler_registration", {
+  const { data, error } = await supabase.rpc("submit_public_traveler_registration_secure", {
     p_token_hash: hashToken(token),
     p_travelers: parsed.data.travelers,
     p_signed_by: parsed.data.signed_by,
