@@ -3,7 +3,9 @@
 import { usePathname } from "next/navigation";
 import { Building2Icon, ShieldCheckIcon } from "lucide-react";
 
+import { useCompanyBranding } from "@/components/company-branding-provider";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { stripTenantSlug, tenantSlugFromPathname } from "@/lib/tenant-routing";
 
 const pageNames: Record<string, string> = {
   "/": "Vue d'ensemble",
@@ -23,7 +25,10 @@ const pageNames: Record<string, string> = {
 
 export function MobileAppHeader() {
   const pathname = usePathname();
-  const title = pageNames[pathname] ?? "Conciergerie";
+  const tenantSlug = tenantSlugFromPathname(pathname);
+  const internalPathname = stripTenantSlug(pathname, tenantSlug);
+  const title = pageNames[internalPathname] ?? "Conciergerie";
+  const { branding } = useCompanyBranding();
 
   return (
     <header
@@ -32,12 +37,16 @@ export function MobileAppHeader() {
     >
       <div className="flex items-center gap-3">
         <SidebarTrigger className="size-10 rounded-xl border bg-card shadow-sm" />
-        <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-          <Building2Icon className="size-4" />
+        <div className="flex size-9 items-center justify-center overflow-hidden rounded-xl bg-primary text-primary-foreground shadow-sm">
+          {branding?.logo_url ? (
+            <img src={branding.logo_url} alt={`Logo ${branding.name}`} className="size-full object-contain" />
+          ) : (
+            <Building2Icon className="size-4" />
+          )}
         </div>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Concierge
+            {branding?.name ?? "Concierge"}
           </p>
           <p className="text-sm font-semibold leading-tight">{title}</p>
         </div>

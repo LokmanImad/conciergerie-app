@@ -28,7 +28,7 @@ export async function POST(
 
     const { data: company, error: companyError } = await supabase
       .from("companies")
-      .select("id, name, max_users, clerk_organization_id")
+      .select("id, name, slug, max_users, clerk_organization_id")
       .eq("id", companyId)
       .single();
     if (companyError || !company) throw new PlatformApiError("Société introuvable.", 404);
@@ -78,7 +78,7 @@ export async function POST(
       emailAddress: parsed.data.email,
       role: toClerkOrganizationRole(parsed.data.role as InternalCompanyRole),
       expiresInDays: 7,
-      redirectUrl: `${applicationOrigin}/sign-up`,
+      redirectUrl: `${applicationOrigin}/${company.slug}/sign-up`,
       publicMetadata: {
         companyId: company.id,
         internalRole: parsed.data.role,

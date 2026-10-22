@@ -19,7 +19,9 @@ export type AccountAccessDecision = {
   allowed: boolean;
   configured: boolean;
   status: AccountAccessStatus;
+  platform_admin: boolean;
   company_id: string | null;
+  company_slug: string | null;
   company_name: string | null;
   company_logo_url: string | null;
   display_name: string | null;
@@ -31,7 +33,9 @@ const initialDecision: AccountAccessDecision = {
   allowed: false,
   configured: true,
   status: "checking",
+  platform_admin: false,
   company_id: null,
+  company_slug: null,
   company_name: null,
   company_logo_url: null,
   display_name: null,

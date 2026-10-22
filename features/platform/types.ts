@@ -49,6 +49,15 @@ export type CompanyBranding = {
   invoice_footer: string | null;
 };
 
+export type PublicCompanyBranding = {
+  company_id: string;
+  slug: string;
+  name: string;
+  logo_url: string | null;
+  primary_color: string;
+  accent_color: string;
+};
+
 export type CompanyLicense = {
   id: string;
   company_id: string;
@@ -81,6 +90,16 @@ export type CompanyMember = {
   active: boolean;
   access_status: "pending_approval" | "active" | "suspended" | "revoked";
   last_synced_at: string | null;
+  last_sign_in_at: string | null;
+  last_active_at: string | null;
+  last_seen_at: string | null;
+  clerk_created_at: string | null;
+  two_factor_enabled: boolean | null;
+  password_enabled: boolean | null;
+  locked: boolean;
+  banned: boolean;
+  created_at: string;
+  updated_at: string;
 };
 
 export type CompanyInvitation = {

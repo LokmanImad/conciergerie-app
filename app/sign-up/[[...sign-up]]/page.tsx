@@ -2,8 +2,19 @@
 
 import { SignUp } from "@clerk/nextjs";
 import { Building2Icon, KeyRoundIcon, ShieldCheckIcon, SparklesIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
+
+import { useCompanyBranding } from "@/components/company-branding-provider";
+import { tenantSlugFromPathname } from "@/lib/tenant-routing";
 
 export default function SignUpPage() {
+  const pathname = usePathname();
+  const tenantSlug = tenantSlugFromPathname(pathname);
+  const signUpPath = tenantSlug ? `/${tenantSlug}/sign-up` : "/sign-up";
+  const signInPath = tenantSlug ? `/${tenantSlug}/sign-in` : "/sign-in";
+  const redirectUrl = tenantSlug ? `/${tenantSlug}` : "/";
+  const { branding } = useCompanyBranding();
+  const companyName = branding?.name ?? "Concierge";
   return (
     <div
       data-sign-up-page
@@ -13,11 +24,15 @@ export default function SignUpPage() {
         <div className="absolute -right-28 -top-28 size-96 rounded-full bg-sidebar-primary/10 blur-2xl" />
         <div className="absolute -bottom-40 -left-28 size-[30rem] rounded-full bg-primary/20 blur-3xl" />
         <div className="relative flex items-center gap-3">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-sidebar-primary text-sidebar-primary-foreground shadow-2xl">
-            <SparklesIcon className="size-6" />
+          <div className="flex size-12 items-center justify-center overflow-hidden rounded-2xl bg-sidebar-primary text-sidebar-primary-foreground shadow-2xl">
+            {branding?.logo_url ? (
+              <img src={branding.logo_url} alt={`Logo ${companyName}`} className="size-full object-contain" />
+            ) : (
+              <SparklesIcon className="size-6" />
+            )}
           </div>
           <div>
-            <p className="text-xl font-bold text-white">Concierge</p>
+            <p className="text-xl font-bold text-white">{companyName}</p>
             <p className="text-xs uppercase tracking-[0.18em] text-sidebar-foreground/50">
               Invitation sécurisée
             </p>
@@ -56,19 +71,23 @@ export default function SignUpPage() {
 
       <section className="flex min-h-screen flex-col items-center justify-center gap-7 p-4 sm:p-8 lg:p-12">
         <div className="flex items-center gap-3 lg:hidden">
-          <div className="flex size-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-            <Building2Icon className="size-5" />
+          <div className="flex size-11 items-center justify-center overflow-hidden rounded-2xl bg-primary text-primary-foreground">
+            {branding?.logo_url ? (
+              <img src={branding.logo_url} alt={`Logo ${companyName}`} className="size-full object-contain" />
+            ) : (
+              <Building2Icon className="size-5" />
+            )}
           </div>
           <div>
-            <p className="font-bold">Concierge</p>
+            <p className="font-bold">{companyName}</p>
             <p className="text-xs text-muted-foreground">Activation de votre invitation</p>
           </div>
         </div>
         <SignUp
-          path="/sign-up"
+          path={signUpPath}
           routing="path"
-          signInUrl="/sign-in"
-          forceRedirectUrl="/"
+          signInUrl={signInPath}
+          forceRedirectUrl={redirectUrl}
           appearance={{
             elements: {
               rootBox: "w-full max-w-md",

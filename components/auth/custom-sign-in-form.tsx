@@ -1,6 +1,7 @@
 "use client"
 
 import { useSignIn } from "@clerk/nextjs"
+import { usePathname } from "next/navigation"
 import type { SignInResource } from "@clerk/types"
 import {
   ArrowLeftIcon,
@@ -21,6 +22,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { tenantSlugFromPathname } from "@/lib/tenant-routing"
 
 type AuthStep = "credentials" | "reset-code" | "new-password" | "second-factor"
 type SecondFactorStrategy = "email_code" | "totp" | "backup_code"
@@ -65,6 +67,8 @@ function maskEmail(value: string) {
 
 export function CustomSignInForm() {
   const { isLoaded, signIn, setActive } = useSignIn()
+  const pathname = usePathname()
+  const tenantSlug = tenantSlugFromPathname(pathname)
   const [step, setStep] = useState<AuthStep>("credentials")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -91,7 +95,7 @@ export function CustomSignInForm() {
       if (!setActive) {
         throw new Error("clerk_not_loaded")
       }
-      await setActive({ session: attempt.createdSessionId, redirectUrl: "/" })
+      await setActive({ session: attempt.createdSessionId, redirectUrl: tenantSlug ? `/${tenantSlug}` : "/" })
       return true
     }
 

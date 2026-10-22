@@ -4,6 +4,7 @@ const STORAGE_KEY = "concierge.device.secret.v1";
 export const DEVICE_COOKIE_NAME = "concierge_device_secret";
 export const DEVICE_SECRET_HEADER = "x-concierge-device-secret";
 export const DEVICE_PLATFORM_HEADER = "x-concierge-platform";
+const DEVICE_SECRET_PATTERN = /^[a-f0-9]{64}$/;
 
 let memorySecret: string | null = null;
 
@@ -26,21 +27,38 @@ function generateSecret() {
 function persistCookie(secret: string) {
   if (typeof document === "undefined") return;
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `${DEVICE_COOKIE_NAME}=${encodeURIComponent(secret)}; Path=/; Max-Age=31536000; SameSite=Strict${secure}`;
+  const hostname = window.location.hostname.toLowerCase();
+  const configuredDomain = process.env.NEXT_PUBLIC_DEVICE_COOKIE_DOMAIN?.trim().replace(/^\./, "");
+  const sharedDomain = configuredDomain
+    ? hostname === configuredDomain || hostname.endsWith(`.${configuredDomain}`)
+      ? configuredDomain
+      : null
+    : hostname === "asadhospitality.ma" || hostname.endsWith(".asadhospitality.ma")
+      ? "asadhospitality.ma"
+      : null;
+  const domain = sharedDomain ? `; Domain=.${sharedDomain}` : "";
+  if (sharedDomain) {
+    // Migrate a previous host-only cookie to the shared application domain,
+    // avoiding two cookies with the same name but different scopes.
+    document.cookie = `${DEVICE_COOKIE_NAME}=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
+  }
+  document.cookie = `${DEVICE_COOKIE_NAME}=${encodeURIComponent(secret)}; Path=/; Max-Age=31536000; SameSite=Lax${secure}${domain}`;
 }
 
 export function getOrCreateWebDeviceSecret() {
   if (memorySecret) return memorySecret;
   if (typeof window === "undefined") return null;
 
-  let secret: string | null = null;
+  // Prefer the cookie because it can be shared by the official application
+  // subdomains. localStorage remains a durable fallback for localhost and
+  // browsers that restrict cookies.
+  let secret: string | null = readCookie();
   try {
-    secret = window.localStorage.getItem(STORAGE_KEY);
+    secret ||= window.localStorage.getItem(STORAGE_KEY);
   } catch {
     // Cookie and memory fallbacks keep private browsing usable.
   }
-  secret = secret || readCookie();
-  if (!secret || secret.length < 32) secret = generateSecret();
+  if (!secret || !DEVICE_SECRET_PATTERN.test(secret)) secret = generateSecret();
 
   memorySecret = secret;
   try {

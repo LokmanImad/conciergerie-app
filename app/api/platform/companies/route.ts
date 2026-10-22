@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const { userId, supabase } = await requirePlatformAdmin();
     const parsed = companySchema.safeParse(await request.json());
     if (!parsed.success) {
-      throw new PlatformApiError("Le nom ou le sous-domaine de la société est invalide.");
+      throw new PlatformApiError("Le nom ou l’identifiant d’URL de la société est invalide.");
     }
 
     const { error: migrationError } = await supabase

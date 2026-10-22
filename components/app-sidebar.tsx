@@ -24,7 +24,9 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useCompanyBranding } from "@/components/company-branding-provider";
 import { useEntitlements } from "@/hooks/use-entitlements";
+import { withTenantSlug } from "@/lib/tenant-routing";
 import {
   Sidebar,
   SidebarContent,
@@ -75,21 +77,24 @@ const menuSections = [
   },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ tenantSlug }: { tenantSlug: string | null }) {
   const pathname = usePathname();
   const { isSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const router = useRouter();
   const entitlements = useEntitlements();
+  const { branding } = useCompanyBranding();
 
   const handleSignOut = async () => {
     await signOut();
-    router.push("/sign-in");
+    router.push(withTenantSlug("/sign-in", tenantSlug));
     router.refresh();
   };
 
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
+  const isActive = (href: string) => {
+    const tenantHref = withTenantSlug(href, tenantSlug);
+    return href === "/" ? pathname === tenantHref : pathname.startsWith(tenantHref);
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
@@ -97,10 +102,9 @@ export function AppSidebar() {
         <div className="flex items-center gap-3 overflow-hidden">
           <div
             className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-sidebar-primary text-sidebar-primary-foreground shadow-[0_8px_24px_rgba(0,0,0,0.18)] group-data-[collapsible=icon]:hidden"
-            style={entitlements.branding?.primary_color ? { backgroundColor: entitlements.branding.primary_color } : undefined}
           >
-            {entitlements.branding?.logo_url ? (
-              <img src={entitlements.branding.logo_url} alt="" className="size-full object-cover" />
+            {branding?.logo_url ? (
+              <img src={branding.logo_url} alt={`Logo ${branding.name}`} className="size-full object-contain" />
             ) : (
               <SparklesIcon className="size-5" />
             )}
@@ -108,7 +112,7 @@ export function AppSidebar() {
           <SidebarTrigger className="hidden size-10 shrink-0 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-white group-data-[collapsible=icon]:flex!" />
           <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
             <h2 className="truncate text-base font-bold tracking-tight text-white">
-              {entitlements.branding?.name ?? "Concierge"}
+              {branding?.name ?? "Concierge"}
             </h2>
             <p className="truncate text-[10px] font-medium uppercase tracking-[0.15em] text-sidebar-foreground/55">
               Espace de gestion
@@ -141,7 +145,7 @@ export function AppSidebar() {
                       isActive={isActive(item.href)}
                       className="h-10 rounded-xl px-3 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-white data-[active=true]:bg-sidebar-primary data-[active=true]:font-semibold data-[active=true]:text-sidebar-primary-foreground data-[active=true]:shadow-[0_8px_22px_rgba(0,0,0,0.16)] group-data-[collapsible=icon]:size-10!"
                     >
-                      <Link href={item.href}>
+                      <Link href={withTenantSlug(item.href, tenantSlug)}>
                         <item.icon className="size-[18px]" />
                         <span>{item.title}</span>
                       </Link>

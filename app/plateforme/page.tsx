@@ -6,7 +6,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type {
   Company,
   CompanyBranding,
-  CompanyDomain,
   CompanyInvitation,
   CompanyLicense,
   CompanyMember,
@@ -35,7 +34,7 @@ export default async function PlatformPage() {
           <ShieldCheckIcon className="size-4" />
           <AlertTitle>Migration requise</AlertTitle>
           <AlertDescription>
-            Exécutez les migrations 40 à 46 dans Supabase. Aucune donnée
+            Exécutez les migrations 40 à 47 dans Supabase. Aucune donnée
             existante ne sera supprimée.
           </AlertDescription>
         </Alert>
@@ -63,7 +62,6 @@ export default async function PlatformPage() {
     { data: devicePolicies },
     { data: brandings },
     { data: members },
-    { data: domains },
     { data: trustedDevices },
     { data: invitations },
   ] = await Promise.all([
@@ -74,7 +72,6 @@ export default async function PlatformPage() {
     supabase.from("company_device_policies").select("*"),
     supabase.from("company_branding").select("*"),
     supabase.from("company_members").select("*"),
-    supabase.from("company_domains").select("*").order("hostname"),
     supabase.from("trusted_devices").select("*").order("created_at", { ascending: false }),
     supabase.from("company_invitations").select("*").order("created_at", { ascending: false }),
   ]);
@@ -94,7 +91,6 @@ export default async function PlatformPage() {
         devicePolicies={(devicePolicies ?? []) as DevicePolicy[]}
         brandings={(brandings ?? []) as CompanyBranding[]}
         members={(members ?? []) as CompanyMember[]}
-        domains={(domains ?? []) as CompanyDomain[]}
         trustedDevices={(trustedDevices ?? []) as TrustedDevice[]}
         invitations={(invitations ?? []) as CompanyInvitation[]}
       />

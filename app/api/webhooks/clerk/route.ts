@@ -194,6 +194,16 @@ async function processEvent(event: WebhookEvent) {
         display_name: fullName(event.data.first_name, event.data.last_name) ?? primaryEmail,
         email: primaryEmail?.toLowerCase() ?? null,
         avatar_url: event.data.image_url || null,
+        last_sign_in_at: event.data.last_sign_in_at
+          ? new Date(event.data.last_sign_in_at).toISOString()
+          : null,
+        last_active_at: event.data.last_active_at
+          ? new Date(event.data.last_active_at).toISOString()
+          : null,
+        two_factor_enabled: event.data.two_factor_enabled,
+        password_enabled: event.data.password_enabled,
+        locked: event.data.locked,
+        banned: event.data.banned,
         last_synced_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })

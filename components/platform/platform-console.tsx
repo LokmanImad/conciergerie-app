@@ -1,23 +1,27 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Building2Icon,
   CalendarClockIcon,
   CheckCircle2Icon,
-  Globe2Icon,
+  ImageIcon,
   Loader2Icon,
   PlusIcon,
+  RotateCcwIcon,
   SaveIcon,
   PaletteIcon,
+  RouteIcon,
   SmartphoneIcon,
+  Trash2Icon,
+  UploadIcon,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CompanyDomainsDialog } from "@/components/platform/company-domains-dialog";
+import { CompanyAccessDialog } from "@/components/platform/company-access-dialog";
 import { CompanyMembersDialog } from "@/components/platform/company-members-dialog";
 import { CompanyDevicesDialog } from "@/components/platform/company-devices-dialog";
 import {
@@ -42,7 +46,6 @@ import { Switch } from "@/components/ui/switch";
 import type {
   Company,
   CompanyBranding,
-  CompanyDomain,
   CompanyInvitation,
   CompanyLicense,
   CompanyMember,
@@ -53,7 +56,25 @@ import type {
   ModuleCatalogItem,
   TrustedDevice,
 } from "@/features/platform/types";
-import { useSupabaseBrowserClient } from "@/lib/supabase/client";
+import { DEFAULT_BRANDING_COLORS, getBrandingThemeStyle } from "@/lib/branding-theme";
+
+type ConfigurationPayload =
+  | { type: "company"; values: { status?: CompanyStatus; web_enabled?: boolean; mobile_enabled?: boolean } }
+  | { type: "license"; licenseId: string; status: LicenseStatus }
+  | { type: "module"; moduleKey: string; enabled: boolean }
+  | { type: "device_policy"; accessMode: DevicePolicy["access_mode"] };
+
+async function saveCompanyConfiguration(companyId: string, payload: ConfigurationPayload) {
+  const response = await fetch(`/api/platform/companies/${companyId}/configuration`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const result = (await response.json().catch(() => ({}))) as { error?: string };
+  if (!response.ok) {
+    throw new Error(result.error ?? "Impossible d’enregistrer la configuration.");
+  }
+}
 
 const companyStatusLabels: Record<CompanyStatus, string> = {
   trial: "Essai",
@@ -80,7 +101,6 @@ export function PlatformConsole({
   devicePolicies,
   brandings,
   members,
-  domains,
   trustedDevices,
   invitations,
 }: {
@@ -91,7 +111,6 @@ export function PlatformConsole({
   devicePolicies: DevicePolicy[];
   brandings: CompanyBranding[];
   members: CompanyMember[];
-  domains: CompanyDomain[];
   trustedDevices: TrustedDevice[];
   invitations: CompanyInvitation[];
 }) {
@@ -133,7 +152,6 @@ export function PlatformConsole({
             devicePolicy={devicePolicies.find((item) => item.company_id === company.id) ?? null}
             branding={brandings.find((item) => item.company_id === company.id) ?? null}
             members={members.filter((item) => item.company_id === company.id)}
-            domains={domains.filter((item) => item.company_id === company.id)}
             trustedDevices={trustedDevices.filter((item) => item.company_id === company.id)}
             invitations={invitations.filter((item) => item.company_id === company.id)}
           />
@@ -175,7 +193,6 @@ function CompanyCard({
   devicePolicy,
   branding,
   members,
-  domains,
   trustedDevices,
   invitations,
 }: {
@@ -186,11 +203,9 @@ function CompanyCard({
   devicePolicy: DevicePolicy | null;
   branding: CompanyBranding | null;
   members: CompanyMember[];
-  domains: CompanyDomain[];
   trustedDevices: TrustedDevice[];
   invitations: CompanyInvitation[];
 }) {
-  const supabase = useSupabaseBrowserClient();
   const router = useRouter();
   const [saving, setSaving] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -199,51 +214,40 @@ function CompanyCard({
     [enabledModules],
   );
 
-  const mutate = async (key: string, action: () => Promise<{ error: { message: string } | null }>) => {
+  const mutate = async (key: string, payload: ConfigurationPayload) => {
     setSaving(key);
     setMessage(null);
-    const { error } = await action();
-    setSaving(null);
-    setMessage(error ? error.message : "Configuration enregistrée.");
-    if (!error) router.refresh();
+    try {
+      await saveCompanyConfiguration(company.id, payload);
+      setMessage("Configuration enregistrée.");
+      router.refresh();
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Impossible d’enregistrer la configuration.",
+      );
+    } finally {
+      setSaving(null);
+    }
   };
 
-  const updateCompany = (values: Partial<Company>) =>
-    mutate("company", async () =>
-      supabase.from("companies").update(values).eq("id", company.id),
-    );
+  const updateCompany = (
+    values: Extract<ConfigurationPayload, { type: "company" }>["values"],
+  ) =>
+    mutate("company", { type: "company", values });
 
   const toggleModule = (moduleKey: string, enabled: boolean) =>
-    mutate(`module-${moduleKey}`, async () =>
-      supabase.from("company_modules").upsert({
-        company_id: company.id,
-        module_key: moduleKey,
-        enabled,
-        enabled_at: enabled ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString(),
-      }),
-    );
+    mutate(`module-${moduleKey}`, { type: "module", moduleKey, enabled });
 
   const updateLicense = (status: LicenseStatus) => {
     if (!license) return Promise.resolve();
-    return mutate("license", async () =>
-      supabase.from("company_licenses").update({ status }).eq("id", license.id),
-    );
+    return mutate("license", { type: "license", licenseId: license.id, status });
   };
 
   const updateDeviceMode = (accessMode: DevicePolicy["access_mode"]) => {
     if (!devicePolicy) return Promise.resolve();
-    return mutate("devices", async () =>
-      supabase
-        .from("company_device_policies")
-        .update({
-          access_mode: accessMode,
-          web_enforced: accessMode !== "any",
-          mobile_enforced: accessMode !== "any",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("company_id", company.id),
-    );
+    return mutate("devices", { type: "device_policy", accessMode });
   };
 
   return (
@@ -265,8 +269,8 @@ function CompanyCard({
           {message && <p className="text-xs text-muted-foreground">{message}</p>}
           <div className="flex flex-wrap gap-2">
             <CompanyDevicesDialog company={company} devices={trustedDevices} members={members} />
-            <CompanyMembersDialog company={company} members={members} invitations={invitations} />
-            <CompanyDomainsDialog company={company} domains={domains} />
+            <CompanyMembersDialog company={company} members={members} invitations={invitations} devices={trustedDevices} />
+            <CompanyAccessDialog company={company} />
             <BrandingDialog company={company} branding={branding} />
           </div>
         </div>
@@ -378,72 +382,227 @@ function BrandingDialog({
   company: Company;
   branding: CompanyBranding | null;
 }) {
-  const supabase = useSupabaseBrowserClient();
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [removeLogo, setRemoveLogo] = useState(false);
   const [form, setForm] = useState({
     legal_name: branding?.legal_name ?? company.name,
-    logo_url: branding?.logo_url ?? "",
-    primary_color: branding?.primary_color ?? "#123F3A",
-    accent_color: branding?.accent_color ?? "#C79A4A",
+    primary_color: branding?.primary_color ?? DEFAULT_BRANDING_COLORS.primary,
+    accent_color: branding?.accent_color ?? DEFAULT_BRANDING_COLORS.accent,
     address: branding?.address ?? "",
     phone: branding?.phone ?? "",
     email: branding?.email ?? "",
     company_identifier: branding?.company_identifier ?? "",
   });
 
+  useEffect(() => {
+    if (!logoFile) {
+      setLogoPreviewUrl(null);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(logoFile);
+    setLogoPreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [logoFile]);
+
+  const resetForm = () => {
+    setForm({
+      legal_name: branding?.legal_name ?? company.name,
+      primary_color: branding?.primary_color ?? DEFAULT_BRANDING_COLORS.primary,
+      accent_color: branding?.accent_color ?? DEFAULT_BRANDING_COLORS.accent,
+      address: branding?.address ?? "",
+      phone: branding?.phone ?? "",
+      email: branding?.email ?? "",
+      company_identifier: branding?.company_identifier ?? "",
+    });
+    setLogoFile(null);
+    setRemoveLogo(false);
+    setMessage(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (nextOpen) resetForm();
+  };
+
   const update = (key: keyof typeof form, value: string) =>
     setForm((current) => ({ ...current, [key]: value }));
+
+  const selectLogo = (file: File | null) => {
+    setMessage(null);
+    if (!file) return;
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      setMessage("Utilisez un logo PNG, JPG ou WebP.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setMessage("Le logo ne doit pas dépasser 2 Mo.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    setLogoFile(file);
+    setRemoveLogo(false);
+  };
+
+  const clearLogo = () => {
+    setLogoFile(null);
+    setRemoveLogo(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const save = async () => {
     setSaving(true);
     setMessage(null);
-    const { error } = await supabase.from("company_branding").upsert({
-      company_id: company.id,
-      legal_name: form.legal_name.trim() || company.name,
-      logo_url: form.logo_url.trim() || null,
-      primary_color: form.primary_color,
-      accent_color: form.accent_color,
-      address: form.address.trim() || null,
-      phone: form.phone.trim() || null,
-      email: form.email.trim() || null,
-      company_identifier: form.company_identifier.trim() || null,
-      updated_at: new Date().toISOString(),
-    });
-    setSaving(false);
-    setMessage(error ? error.message : null);
-    if (!error) {
+    try {
+      const body = new FormData();
+      body.set("legal_name", form.legal_name.trim() || company.name);
+      body.set("primary_color", form.primary_color);
+      body.set("accent_color", form.accent_color);
+      body.set("address", form.address.trim());
+      body.set("phone", form.phone.trim());
+      body.set("email", form.email.trim());
+      body.set("company_identifier", form.company_identifier.trim());
+      body.set("remove_logo", String(removeLogo));
+      if (logoFile) body.set("logo", logoFile);
+
+      const response = await fetch(`/api/platform/companies/${company.id}/branding`, {
+        method: "POST",
+        body,
+      });
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) {
+        throw new Error(result.error ?? "Impossible d’enregistrer l’identité visuelle.");
+      }
+
       setOpen(false);
+      window.dispatchEvent(
+        new CustomEvent("company-branding-updated", { detail: { slug: company.slug } }),
+      );
       router.refresh();
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Impossible d’enregistrer l’identité visuelle.",
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
+  const displayedLogo = logoPreviewUrl ?? (!removeLogo ? branding?.logo_url ?? null : null);
+  const previewTheme = getBrandingThemeStyle({
+    primary_color: form.primary_color,
+    accent_color: form.accent_color,
+  });
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <PaletteIcon className="size-4" /> Identité visuelle
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-h-[94vh] overflow-x-hidden overflow-y-auto sm:max-w-[min(94vw,72rem)]">
         <DialogHeader>
           <DialogTitle>Identité de {company.name}</DialogTitle>
           <DialogDescription>
-            Ces informations alimentent l’application et les futurs documents personnalisés.
+            Personnalisez le logo, les couleurs et les informations utilisées dans l’espace de la société.
           </DialogDescription>
         </DialogHeader>
         {message && <p className="text-sm text-destructive">{message}</p>}
-        <div className="grid gap-4 py-2 md:grid-cols-2">
-          <Control label="Nom légal"><Input value={form.legal_name} onChange={(event) => update("legal_name", event.target.value)} /></Control>
-          <Control label="URL du logo"><Input value={form.logo_url} onChange={(event) => update("logo_url", event.target.value)} placeholder="https://..." /></Control>
-          <Control label="Couleur principale"><Input type="color" value={form.primary_color} onChange={(event) => update("primary_color", event.target.value)} className="h-10" /></Control>
-          <Control label="Couleur d’accent"><Input type="color" value={form.accent_color} onChange={(event) => update("accent_color", event.target.value)} className="h-10" /></Control>
-          <Control label="Adresse"><Input value={form.address} onChange={(event) => update("address", event.target.value)} /></Control>
-          <Control label="Téléphone"><Input value={form.phone} onChange={(event) => update("phone", event.target.value)} /></Control>
-          <Control label="Email"><Input type="email" value={form.email} onChange={(event) => update("email", event.target.value)} /></Control>
-          <Control label="ICE / identifiant"><Input value={form.company_identifier} onChange={(event) => update("company_identifier", event.target.value)} /></Control>
+        <div className="space-y-5 py-2">
+          <div className="grid gap-6 md:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)]">
+            <div className="space-y-2">
+              <Label>Logo de la société</Label>
+              <button
+                type="button"
+                className="group flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl border border-dashed bg-muted/35 p-4 transition hover:border-primary hover:bg-primary/5"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {displayedLogo ? (
+                  <img src={displayedLogo} alt="Aperçu du logo" className="size-full object-contain" />
+                ) : (
+                  <span className="flex flex-col items-center gap-2 text-muted-foreground group-hover:text-primary">
+                    <ImageIcon className="size-8" />
+                    <span className="text-xs font-medium">Sélectionner un logo</span>
+                  </span>
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="sr-only"
+                onChange={(event) => selectLogo(event.target.files?.[0] ?? null)}
+              />
+              <div className="flex gap-2">
+                <Button type="button" size="sm" variant="outline" className="flex-1" onClick={() => fileInputRef.current?.click()}>
+                  <UploadIcon className="size-4" /> Importer
+                </Button>
+                {displayedLogo && (
+                  <Button type="button" size="icon" variant="outline" onClick={clearLogo} aria-label="Supprimer le logo">
+                    <Trash2Icon className="size-4" />
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs leading-5 text-muted-foreground">PNG, JPG ou WebP · 2 Mo maximum.</p>
+            </div>
+
+            <div className="min-w-0 space-y-4">
+              <Control label="Nom légal">
+                <Input value={form.legal_name} onChange={(event) => update("legal_name", event.target.value)} />
+              </Control>
+              <div className="grid min-w-0 gap-4 md:grid-cols-2">
+                <ColorField label="Couleur principale" value={form.primary_color} onChange={(value) => update("primary_color", value)} />
+                <ColorField label="Couleur d’accent" value={form.accent_color} onChange={(value) => update("accent_color", value)} />
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="w-fit"
+                onClick={() => setForm((current) => ({
+                  ...current,
+                  primary_color: DEFAULT_BRANDING_COLORS.primary,
+                  accent_color: DEFAULT_BRANDING_COLORS.accent,
+                }))}
+              >
+                <RotateCcwIcon className="size-4" /> Couleurs par défaut
+              </Button>
+
+              <div className="overflow-hidden rounded-2xl border" style={previewTheme}>
+                <div className="flex items-center gap-3 bg-sidebar p-4 text-sidebar-foreground">
+                  <div className="flex size-10 items-center justify-center overflow-hidden rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">
+                    {displayedLogo ? <img src={displayedLogo} alt="" className="size-full object-contain" /> : <PaletteIcon className="size-5" />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-white">{form.legal_name || company.name}</p>
+                    <p className="text-xs text-sidebar-foreground/60">Aperçu de la marque</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 bg-card p-4">
+                  <Button type="button" size="sm">Action principale</Button>
+                  <Badge className="bg-accent text-accent-foreground hover:bg-accent">Accent</Badge>
+                  <span className="text-xs text-muted-foreground">Thème global</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 border-t pt-5 md:grid-cols-2">
+            <Control label="Adresse"><Input value={form.address} onChange={(event) => update("address", event.target.value)} /></Control>
+            <Control label="Téléphone"><Input value={form.phone} onChange={(event) => update("phone", event.target.value)} /></Control>
+            <Control label="Email"><Input type="email" value={form.email} onChange={(event) => update("email", event.target.value)} /></Control>
+            <Control label="ICE / identifiant"><Input value={form.company_identifier} onChange={(event) => update("company_identifier", event.target.value)} /></Control>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
@@ -457,6 +616,47 @@ function BrandingDialog({
   );
 }
 
+function ColorField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [draft, setDraft] = useState(value);
+
+  useEffect(() => setDraft(value), [value]);
+
+  return (
+    <Control label={label}>
+      <div className="flex min-w-0 items-center gap-2 rounded-xl border bg-background p-1.5">
+        <input
+          type="color"
+          value={value}
+          onChange={(event) => onChange(event.target.value.toUpperCase())}
+          className="size-9 shrink-0 cursor-pointer rounded-lg border-0 bg-transparent p-0"
+          aria-label={label}
+        />
+        <Input
+          value={draft}
+          maxLength={7}
+          className="h-9 min-w-0 border-0 font-mono uppercase shadow-none focus-visible:ring-0"
+          onChange={(event) => {
+            const nextValue = event.target.value.toUpperCase();
+            if (/^#[0-9A-F]{0,6}$/.test(nextValue)) {
+              setDraft(nextValue);
+              if (/^#[0-9A-F]{6}$/.test(nextValue)) onChange(nextValue);
+            }
+          }}
+          onBlur={() => setDraft(value)}
+        />
+      </div>
+    </Control>
+  );
+}
+
 function CreateCompanyDialog() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -467,7 +667,7 @@ function CreateCompanyDialog() {
 
   const create = async () => {
     if (!name.trim() || !slug.trim()) {
-      setError("Le nom et le sous-domaine sont obligatoires.");
+      setError("Le nom et l’identifiant d’URL sont obligatoires.");
       return;
     }
     setSaving(true);
@@ -506,15 +706,16 @@ function CreateCompanyDialog() {
           <Control label="Nom de la société">
             <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Conciergerie Atlas" />
           </Control>
-          <Control label="Sous-domaine">
+          <Control label="Identifiant d’URL">
             <div className="flex items-center gap-2">
               <Input
                 value={slug}
                 onChange={(event) => setSlug(event.target.value.replace(/[^a-zA-Z0-9-]/g, "").toLowerCase())}
                 placeholder="conciergerie-atlas"
               />
-              <Globe2Icon className="size-5 text-muted-foreground" />
+              <RouteIcon className="size-5 text-muted-foreground" />
             </div>
+            <p className="text-xs text-muted-foreground">La société utilisera la route /{slug || "nom-societe"}.</p>
           </Control>
         </div>
         <DialogFooter>
