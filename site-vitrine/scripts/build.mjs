@@ -1,6 +1,7 @@
 import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 import { getPages, renderPage } from "../src/pages.mjs";
 import { escapeHtml, safeUrl } from "../src/html.mjs";
 
@@ -16,6 +17,22 @@ export async function build() {
   site.email = process.env.PUBLIC_CONTACT_EMAIL || site.email;
   site.phone = process.env.PUBLIC_CONTACT_PHONE || site.phone;
   site.whatsapp = process.env.PUBLIC_WHATSAPP_NUMBER || site.whatsapp;
+  // A coherent version prevents older cached CSS/JS from mixing with new HTML.
+  const assets = [
+    "site.css",
+    "brand.css",
+    "experience.css",
+    "navigation.css",
+    "mobile.css",
+    "site.js",
+  ];
+  const assetContents = await Promise.all(
+    assets.map((name) => readFile(resolve(projectRoot, "public/assets", name))),
+  );
+  site.assetVersion = createHash("sha256")
+    .update(Buffer.concat(assetContents))
+    .digest("hex")
+    .slice(0, 12);
   if (!safeUrl(site.url) || !safeUrl(site.appUrl))
     throw new Error(
       "Les adresses du site et de l’application doivent utiliser HTTPS.",

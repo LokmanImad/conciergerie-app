@@ -1,5 +1,6 @@
 import { brandLogo } from "./brand.mjs";
 import { icon } from "./icons.mjs";
+import { renderHeaderPhone } from "./contact-widget.mjs";
 
 const primary = [
   ["/gestion-locative", "Gestion locative"],
@@ -26,6 +27,7 @@ export function renderNavigation(site, pathname) {
         <button class="more-toggle" type="button" data-menu-toggle aria-label="Afficher les autres rubriques" aria-expanded="false" aria-controls="site-menu" hidden><span>Plus</span><span class="nav-chevron" aria-hidden="true"></span></button>
       </nav>
       <a class="header-contact" href="/contact"><span>Parlons de votre bien</span>${icon("diagonal")}</a>
+      ${renderHeaderPhone(site)}
       <button class="menu-toggle" type="button" data-menu-toggle aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="site-menu" hidden><span>Menu</span><span class="menu-toggle-lines" aria-hidden="true"><span></span><span></span></span></button>
       <div id="site-menu" class="site-menu" hidden>
         <div class="menu-panel-heading"><span>Découvrir Asad</span><button type="button" class="menu-close" data-menu-close aria-label="Fermer le menu">${icon("close")}</button></div>

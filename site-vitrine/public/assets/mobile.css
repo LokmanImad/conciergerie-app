@@ -1,0 +1,189 @@
+/* Phone-first refinements, loaded after the established desktop identity. */
+.header-phone,
+.contact-widget { display: none; }
+
+@media (max-width: 980px) {
+  .header-phone {
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; width: 44px; height: 44px;
+    border: 1px solid #342c2026; border-radius: 50%; color: #191916;
+  }
+  .header-phone .icon { width: 19px; height: 19px; }
+  body { padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .contact-widget {
+    display: block; position: fixed; z-index: 45;
+    right: max(14px, env(safe-area-inset-right, 0px));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  .contact-launcher {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 52px; min-height: 52px; padding: 0; gap: 0;
+    border: 1px solid #fff3df70; border-radius: 999px;
+    background: #191916; color: #fff3df;
+    box-shadow: 0 6px 24px #30251935; font-size: 13px;
+  }
+  .contact-launcher > span {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+  .contact-launcher > .icon { width: 21px; height: 21px; }
+  .contact-launcher[aria-expanded="true"] { background: #42392b; }
+  .contact-options {
+    position: absolute; right: 0; bottom: calc(100% + 12px);
+    width: min(300px, calc(100vw - 28px));
+    max-height: calc(100svh - 150px); overflow-y: auto;
+    padding: 12px; border: 1px solid #dfd1ba; border-radius: 16px;
+    background: #fff8ed; color: #191916; box-shadow: 0 12px 40px #30251930;
+    overscroll-behavior: contain;
+  }
+  .contact-options[hidden], .contact-launcher[hidden] { display: none; }
+  .contact-options-heading {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; font-size: 12px; color: #77664c;
+  }
+  .contact-options-heading button {
+    display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px;
+    border: 0; border-radius: 50%; color: inherit; background: transparent;
+  }
+  .contact-options-heading button .icon { width: 18px; height: 18px; }
+  .contact-choice {
+    display: flex; align-items: center; gap: 12px; min-height: 66px;
+    padding: 10px 7px; border-radius: 10px; font-size: 15px;
+  }
+  .contact-choice:hover { background: #efe1cb; }
+  .contact-choice-icon {
+    display: grid; place-items: center; flex-shrink: 0; width: 40px; height: 40px;
+    border-radius: 50%; background: #efe1cb; color: #625039;
+  }
+  .contact-choice-icon .icon { width: 20px; height: 20px; }
+  .contact-choice-whatsapp .contact-choice-icon { background: #e1eee4; color: #236b41; }
+  .contact-choice small { display: block; margin-top: 3px; font-size: 12px; color: #665b49; }
+  .contact-choice > .icon { width: 16px; height: 16px; margin-left: auto; }
+  .back-top {
+    left: max(14px, env(safe-area-inset-left, 0px)); right: auto;
+    bottom: calc(19px + env(safe-area-inset-bottom, 0px)); width: 44px; height: 44px;
+  }
+  body.contact-open .back-top { visibility: hidden; opacity: 0; pointer-events: none; }
+}
+
+@media (max-width: 640px), (max-width: 980px) and (max-height: 600px) {
+  html { scroll-padding-top: 82px; }
+  body { font-size: 15px; }
+  .site-header {
+    --mobile-logo-width: clamp(144px, 42vw, 184px);
+    width: 100%; height: 64px; margin: 0; top: 0; gap: 8px;
+    padding-inline: max(10px, env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-right, 0px));
+    border-radius: 0; border-width: 0 0 1px;
+  }
+  .site-header .brand .brand-logo-crop { width: var(--mobile-logo-width); height: 50px; }
+  .site-header .brand .brand-logo-original {
+    width: calc(var(--mobile-logo-width) * 1.45);
+    height: calc(var(--mobile-logo-width) * 1.45);
+    transform: translate(calc(-50% + 4px), -50%);
+  }
+  .site-header .header-phone { width: 44px; height: 44px; margin-left: auto; }
+  .site-header .header-contact { display: none; }
+  .site-header .menu-toggle {
+    min-width: 80px; height: 44px; margin: 0; padding-inline: 12px;
+    font-size: 12px; gap: 10px;
+  }
+  .site-menu {
+    top: calc(100% + 8px); right: 10px; width: min(340px, calc(100vw - 20px));
+    max-width: calc(100vw - 20px); max-height: calc(100svh - 90px);
+  }
+  .menu-primary a { font-size: 14px; }
+  .menu-secondary a, .menu-project { font-size: 13px; }
+  .menu-panel-heading { font-size: 12px; }
+  .menu-secondary small { font-size: 11px; }
+  .menu-project { min-height: 46px; }
+  .wrap { width: calc(100% - 40px); }
+  .signature-hero { min-height: 0; height: auto; }
+  .signature-hero-content { padding-top: 32px; padding-bottom: 30px; }
+  .signature-hero-top { margin-bottom: 30px; }
+  .signature-kicker { font-size: 10px; }
+  .signature-hero h1 { font-size: clamp(42px, 12.5vw, 58px); line-height: 1.06; letter-spacing: -.04em; }
+  .signature-hero h1 > em { white-space: normal; }
+  .signature-hero-description { margin-top: 24px; max-width: 100%; }
+  .signature-hero-description p { font-size: 15px; line-height: 1.75; }
+  .signature-hero-actions .button, .signature-investment .button {
+    font-size: 13px; min-height: 48px; padding: 13px 16px; gap: 16px;
+  }
+  .signature-link { font-size: 13px; }
+  .signature-hero-footnote { font-size: 11px; flex-wrap: wrap; }
+  .signature-seal, .signature-photo-note { display: none; }
+  .signature-hero-bottom {
+    position: relative; inset: auto; margin-inline: auto; padding-block: 18px;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 8px;
+  }
+  .signature-hero-bottom .signature-scroll, .signature-hero-bottom > span { font-size: 9px; }
+  .signature-hero-bottom a:last-child { font-size: 11px; }
+  .signature-collection, .signature-destinations, .signature-application, .signature-faq { padding-block: 44px; }
+  .signature-section-meta { font-size: 10px; letter-spacing: 1px; }
+  .signature-section-heading { margin-block: 24px; gap: 18px; }
+  .signature-section-heading h2, .signature-philosophy-copy h2,
+  .signature-investment h2, .signature-app-heading h2, .signature-faq h2 {
+    font-size: clamp(34px, 9.5vw, 42px); line-height: 1.1; letter-spacing: -.035em;
+  }
+  .signature-section-heading p, .signature-philosophy-copy > p:not(.eyebrow),
+  .signature-investment-copy > p, .signature-app-heading > p,
+  .signature-faq > div > p:not(.eyebrow) { font-size: 15px; line-height: 1.8; max-width: 100%; }
+  .text-link, .signature-philosophy-copy .text-link, .signature-app-heading > .text-link { font-size: 13px; }
+  .signature-services { grid-template-rows: repeat(3, minmax(290px, auto)); }
+  .signature-service-copy { left: 20px; right: 55px; bottom: 24px; }
+  .signature-service-copy h3 { font-size: 32px; }
+  .signature-service-label { font-size: 10px; }
+  .signature-service-copy p, .signature-collection-bottom p { font-size: 13px; }
+  .signature-philosophy { padding-block: 40px; }
+  .signature-collage-main { height: 310px; }
+  .signature-collage-detail { height: 160px; }
+  .signature-collage-caption { font-size: 9px; line-height: 1.6; }
+  .signature-philosophy-copy { padding-bottom: 0; }
+  .signature-philosophy-copy .eyebrow { font-size: 10px; }
+  .signature-manifesto { display: none; }
+  .signature-destination:nth-child(2n) { padding-top: 0; }
+  .signature-destination-photo, .signature-destination:nth-child(2n) .signature-destination-photo { height: auto; aspect-ratio: 3 / 4; }
+  .signature-destination-status { font-size: 9px; }
+  .signature-destination-name h3 { font-size: 26px; }
+  .signature-destination-name > span { font-size: 10px; }
+  .signature-destination > p { font-size: 13px; }
+  .signature-destinations .image-disclaimer { font-size: 11px !important; }
+  .signature-investment { min-height: 0; }
+  .signature-investment-inner { display: grid; gap: 24px; padding-block: 40px; }
+  .signature-investment-copy { width: 100%; }
+  .signature-investment-copy .eyebrow { font-size: 10px; }
+  .signature-investment h2 { font-size: clamp(36px, 10vw, 46px); }
+  .signature-investment-copy .signature-investment-note { font-size: 11px; }
+  .signature-investment-note-card {
+    display: block; position: static; width: 100%; margin: 0; padding: 20px;
+  }
+  .signature-investment-note-card > span { display: block; font-size: 10px; }
+  .signature-investment-note-card p { font-size: 25px; margin-top: 12px; }
+  .signature-investment-note-card p br { display: none; }
+  .signature-investment-note-card p em::before { content: " "; }
+  .signature-investment-note-card > .icon { margin-top: 14px; }
+  .signature-app-label { font-size: 9px; }
+  .signature-app-note { position: relative; inset: auto; margin-top: 14px; transform: none; }
+  .signature-app-note span { font-size: 12px; }
+  .signature-app-scene .app-preview { transform: none; }
+  .signature-app-heading > .badge {
+    font-size: 10px; letter-spacing: .3px; max-width: 100%; white-space: normal; line-height: 1.6;
+  }
+  .signature-application { grid-template-columns: minmax(0, 1fr); }
+  .signature-app-heading, .signature-app-scene, .app-preview, .preview-main { min-width: 0; max-width: 100%; }
+  .signature-faq .faq-list summary { font-size: 14px; padding-block: 18px; }
+  .faq-list details > p { font-size: 14px; line-height: 1.75; padding-left: 0; }
+  .signature-invitation-top .eyebrow { font-size: 9px; }
+  .signature-invitation h2 { font-size: clamp(31px, 8.6vw, 39px); }
+  .signature-invitation-arrow { width: 44px; height: 44px; }
+  .signature-invitation-bottom p, .signature-invitation-bottom a { font-size: 12px; }
+  .page-intro { padding-block: 32px; }
+  .page-intro h1 { font-size: clamp(34px, 10vw, 46px); }
+  .page-intro > p:not(.eyebrow) { font-size: 15px; line-height: 1.75; }
+  .service-steps article h2 { font-size: 20px; }
+  .service-steps article p, .city-copy p, .about-copy p, .prose p { font-size: 15px; line-height: 1.8; }
+  .contact-form label { font-size: 14px; }
+  .contact-form input, .contact-form select, .contact-form textarea { font-size: 16px; min-width: 0; }
+  .contact-method strong { font-size: 15px; overflow-wrap: anywhere; }
+  .footer-top h2 { font-size: 12px; }
+  .footer-top > div > a:not(.brand), .footer-bottom { font-size: 13px; }
+}

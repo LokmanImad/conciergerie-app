@@ -23,6 +23,7 @@ if (menuButtons.length && siteMenu) {
       }
       opener = button;
       siteMenu.hidden = false;
+      document.dispatchEvent(new Event("site-menu-open"));
       menuButtons.forEach((toggle) =>
         toggle.setAttribute("aria-expanded", "true"),
       );
@@ -61,6 +62,54 @@ if (menuButtons.length && siteMenu) {
     closeMenu();
   });
   window.addEventListener("pagehide", () => closeMenu());
+  document.addEventListener("contact-widget-open", () => closeMenu());
+}
+
+const contactWidget = document.querySelector("[data-contact-widget]");
+if (contactWidget) {
+  const toggle = contactWidget.querySelector("[data-contact-toggle]");
+  const options = contactWidget.querySelector("#contact-options");
+  function closeContact(returnFocus = false) {
+    options.hidden = true;
+    toggle.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("contact-open");
+    if (returnFocus) toggle.focus({ preventScroll: true });
+  }
+  toggle.hidden = false;
+  toggle.addEventListener("click", (event) => {
+    if (!options.hidden) return closeContact();
+    document.dispatchEvent(new Event("contact-widget-open"));
+    options.hidden = false;
+    toggle.setAttribute("aria-expanded", "true");
+    document.body.classList.add("contact-open");
+    if (event.detail === 0)
+      options.querySelector("a")?.focus({ preventScroll: true });
+  });
+  contactWidget
+    .querySelector("[data-contact-close]")
+    .addEventListener("click", () => closeContact(true));
+  options.addEventListener("click", (event) => {
+    if (event.target.closest("a")) closeContact();
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (!options.hidden && !contactWidget.contains(event.target))
+      closeContact();
+  });
+  document.addEventListener("focusin", (event) => {
+    if (!options.hidden && !contactWidget.contains(event.target))
+      closeContact();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !options.hidden) {
+      event.preventDefault();
+      closeContact(true);
+    }
+  });
+  document.addEventListener("site-menu-open", () => closeContact());
+  window
+    .matchMedia("(min-width: 981px)")
+    .addEventListener("change", () => closeContact());
+  window.addEventListener("pagehide", () => closeContact());
 }
 
 const header = document.querySelector("[data-header]");

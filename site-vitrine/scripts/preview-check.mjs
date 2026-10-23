@@ -187,6 +187,87 @@ try {
     }
     console.log(`${width}px : pages contrôlées.`);
   }
+  let mobileChecks = 0;
+  for (const [width, height] of [[320, 568], [360, 740], [390, 844], [430, 932], [844, 390]]) {
+    await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: true });
+    await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
+    await navigate("/");
+    const layout = await evaluate(`(() => {
+      const q = s => document.querySelector(s);
+      const r = s => q(s).getBoundingClientRect();
+      const card = r('.signature-investment-note-card');
+      const text = r('.signature-investment-note-card p');
+      return {
+        scroll: document.documentElement.scrollWidth,
+        headerHeight: r('[data-header]').height,
+        headerWidth: q('[data-header]').clientWidth,
+        headerScroll: q('[data-header]').scrollWidth,
+        phone: q('.header-phone').getAttribute('href'),
+        reading: parseFloat(getComputedStyle(q('.signature-philosophy-copy > p:not(.eyebrow)')).fontSize),
+        heading: parseFloat(getComputedStyle(q('.signature-investment h2')).fontSize),
+        display: getComputedStyle(q('.signature-investment-note-card')).display,
+        contained: text.left >= card.left && text.right <= card.right && text.bottom <= card.bottom,
+        manifesto: getComputedStyle(q('.signature-manifesto')).display,
+        fixed: getComputedStyle(q('[data-contact-widget]')).position,
+        bottom: r('[data-contact-toggle]').bottom,
+        right: r('[data-contact-toggle]').right,
+        footerPadding: parseFloat(getComputedStyle(document.body).paddingBottom)
+      };
+    })()`);
+    assert.ok(layout.scroll <= width + 1, `Débordement mobile ${width}px: ${JSON.stringify(layout)}`);
+    assert.ok(layout.headerHeight <= 64 && layout.headerScroll <= layout.headerWidth + 1);
+    assert.equal(layout.phone, "tel:+212622625187");
+    assert.ok(layout.reading >= 15 && layout.heading <= 46);
+    assert.equal(layout.display, "block");
+    assert.equal(layout.contained, true);
+    assert.equal(layout.manifesto, "none");
+    assert.equal(layout.fixed, "fixed");
+    assert.ok(layout.bottom <= height - 15 && layout.right <= width && layout.footerPadding >= 90);
+    await evaluate(`document.querySelector('.signature-philosophy-copy').scrollIntoView(); true`);
+    assert.equal(await evaluate(`document.querySelector('[data-contact-toggle]').getBoundingClientRect().bottom`), layout.bottom);
+    if (width === 390) await screenshot("mobile-philosophy.png", width, height, true);
+    await evaluate(`document.querySelector('.signature-investment').scrollIntoView(); true`);
+    if (width === 390) await screenshot("mobile-investment.png", width, height, true);
+    await evaluate(`document.querySelector('[data-contact-toggle]').click()`);
+    const panel = await evaluate(`(() => {
+      const p = document.querySelector('#contact-options'); const r = p.getBoundingClientRect();
+      return { hidden: p.hidden, left: r.left, right: r.right, top: r.top, bottom: r.bottom,
+        call: p.querySelector('[data-contact-call]').getAttribute('href'),
+        whatsapp: p.querySelector('[data-contact-whatsapp]').getAttribute('href'),
+        back: getComputedStyle(document.querySelector('.back-top')).visibility,
+        expanded: document.querySelector('[data-contact-toggle]').getAttribute('aria-expanded') };
+    })()`);
+    assert.equal(panel.hidden, false);
+    assert.equal(panel.expanded, "true");
+    assert.ok(panel.left >= 0 && panel.right <= width && panel.top >= 64 && panel.bottom <= height);
+    assert.equal(panel.call, "tel:+212622625187");
+    assert.equal(panel.whatsapp, "https://wa.me/212669834697");
+    assert.equal(panel.back, "hidden");
+    if (width === 390) await screenshot("mobile-contact-options.png", width, height, true);
+    await send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+    assert.equal(await evaluate(`document.querySelector('#contact-options').hidden && document.activeElement === document.querySelector('[data-contact-toggle]')`), true);
+    await evaluate(`document.querySelector('[data-contact-toggle]').click(); document.querySelector('.menu-toggle').click()`);
+    assert.equal(await evaluate(`document.querySelector('#contact-options').hidden && !document.querySelector('#site-menu').hidden`), true);
+    await evaluate(`document.querySelector('[data-contact-toggle]').click()`);
+    assert.equal(await evaluate(`!document.querySelector('#contact-options').hidden && document.querySelector('#site-menu').hidden`), true);
+    await evaluate(`document.querySelector('[data-contact-close]').click()`);
+    assert.equal(await evaluate(`document.querySelector('#contact-options').hidden`), true);
+    await evaluate(`document.querySelector('[data-contact-toggle]').click()`);
+    for (const type of ["mousePressed", "mouseReleased"]) {
+      await send("Input.dispatchMouseEvent", { type, x: 3, y: 100, button: "left", clickCount: 1 });
+    }
+    assert.equal(await evaluate(`document.querySelector('#contact-options').hidden`), true);
+    await evaluate(`document.querySelector('[data-contact-toggle]').click(); document.querySelector('[data-contact-close]').focus()`);
+    for (let tab = 0; tab < 3; tab++) {
+      for (const type of ["keyDown", "keyUp"]) await send("Input.dispatchKeyEvent", { type, key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
+    }
+    assert.equal(await evaluate(`document.activeElement === document.querySelector('[data-contact-toggle]')`), true);
+    await evaluate(`document.querySelector('.header-phone').focus()`);
+    assert.equal(await evaluate(`document.querySelector('#contact-options').hidden`), true);
+    mobileChecks++;
+    console.log(`Mobile ${width}×${height} : disposition et contacts contrôlés.`);
+  }
+  await send("Emulation.setEmulatedMedia", { features: [] });
   let menuChecks = 0;
   const openerSelector = () =>
     `innerWidth <= 980 ? '.menu-toggle' : '.more-toggle'`;
@@ -380,6 +461,8 @@ try {
   });
   await navigate("/");
   await screenshot("header-desktop.png", 1440, 340);
+  assert.equal(await evaluate(`getComputedStyle(document.querySelector('[data-contact-widget]')).display`), "none");
+  assert.equal(await evaluate(`getComputedStyle(document.querySelector('.header-phone')).display`), "none");
   const height = await evaluate("document.documentElement.scrollHeight");
   await screenshot("desktop.png", 1440, height);
   assert.deepEqual(errors, []);
@@ -387,6 +470,7 @@ try {
     JSON.stringify(
       {
         checks,
+        mobileLayoutsAndContact: mobileChecks,
         menu: "OK",
         menuWidths: menuChecks,
         directLinksAndCompactPanel: "OK",

@@ -20,6 +20,8 @@ npm run build
 
 Pour relancer le contrôle visuel automatique, démarrer le serveur puis exécuter `node scripts/preview-check.mjs` dans un deuxième terminal. Il utilise une installation locale de Chrome ; renseigner `BROWSER_EXECUTABLE` si son chemin diffère. Le contrôle couvre neuf pages à cinq largeurs d’écran et conserve les captures dans un dossier temporaire.
 
+Le même contrôle vérifie aussi cinq formats de téléphone, dont le paysage : lisibilité des textes, texte contenu dans l’encart immobilier, stabilité du bouton flottant pendant le défilement, bonnes destinations téléphone/WhatsApp, fermeture au clavier/clic extérieur et exclusion mutuelle des panneaux. Il vérifie les liens sans déclencher d’appel ni ouvrir WhatsApp. La simulation Chrome ne remplace pas une validation finale sur un iPhone/Safari réel.
+
 ## Modifier le contenu
 
 - `content/site.json` : coordonnées, titre d’accueil, villes, projets.
@@ -27,10 +29,12 @@ Pour relancer le contrôle visuel automatique, démarrer le serveur puis exécut
 - `src/home-experience.mjs` : composition éditoriale de l’accueil, collection de services, collage, destinations et invitation de contact.
 - `src/presentation.mjs` : composants HTML partagés (liens, boutons, images, FAQ et appels à l’action).
 - `src/navigation.mjs` : barre flottante, liens directs et menu secondaire compact partagé par toutes les pages.
+- `src/contact-widget.mjs` : appel direct dans le bandeau mobile et accès flottant aux coordonnées téléphone/WhatsApp de `content/site.json`.
 - `public/assets/site.css` : styles de base et adaptation responsive.
 - `public/assets/brand.css` : identité Asad Hospitality, palette sable/noir/doré, présentation immersive et cadrage des logos.
 - `public/assets/experience.css` : compositions de la version éditoriale, transitions et adaptation responsive de l’expérience. Les animations respectent la préférence de réduction des mouvements.
 - `public/assets/navigation.css` : navigation à liens directs sur ordinateur, panneau « Plus » pour les rubriques secondaires et petit menu déroulant sur mobile. Le panneau ne masque pas toute la page et ne bloque pas son défilement. Il se ferme avec Échap, un clic extérieur ou lorsque le focus le quitte. Une navigation sans JavaScript reste disponible.
+- `public/assets/mobile.css` : corrections des proportions, textes et encarts sur téléphone, ainsi que des zones tactiles et du positionnement des contacts au-dessus de la zone de sécurité du navigateur. Le bouton retour en haut reste à gauche ; le contact est à droite. Les deux panneaux (navigation et contact) ne s’ouvrent pas simultanément. Les styles et scripts sont versionnés au build pour éviter un mélange avec d’anciens fichiers en cache.
 - `public/assets/` : logos officiels fournis par Asad Hospitality, images et polices locales. Les photographies initiales sont des visuels d’ambiance, pas des biens commercialisés.
 
 Les fichiers de logo originaux sont conservés sans modification. Pour remplacer les deux variantes, utiliser `node scripts/import-logos.mjs "chemin/du-logo-clair.jpg" "chemin/du-logo-transparent.png"` puis reconstruire le site. La configuration `branding` de `content/site.json` pointe vers les deux fichiers importés. Leur affichage est cadré en CSS pour conserver une marque lisible malgré les grandes marges des images carrées.
